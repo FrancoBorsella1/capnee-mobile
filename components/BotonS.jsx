@@ -25,7 +25,7 @@ export default function BotonS({
     titulo,
     colorFondo = colors.violeta,
     IconoComponente,
-    tamanoFuente = 22,
+    tamanoFuente = 24,
     onPress
 }) {
     
