@@ -23,9 +23,6 @@ export default function Perfil() {
                 IconoComponente={Close}
                 colorFondo={colors.rojo}
             />
-            <Link href="/">
-                Ir al Index
-            </Link>
         </Fondo>
     );
 }
