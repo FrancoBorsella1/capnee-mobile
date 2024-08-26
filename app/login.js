@@ -29,6 +29,7 @@ export default function Login() {
                 />
                 <BotonL
                     titulo="Inicio de sesión facial"
+                    tamanoFuente={24}
                 />         
                 <Link href="/">
                     Ir al Index
