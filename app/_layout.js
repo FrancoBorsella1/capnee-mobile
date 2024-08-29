@@ -1,18 +1,45 @@
 //Este archivo envuelve a toda la aplicación. Aquí se renderiza el contenido.
 
-import { StyleSheet, View, SafeAreaView } from "react-native";
-import { Slot } from "expo-router";
+import { View } from "react-native";
+import { Slot, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 //Importaciones para fuentes
 
 import { Inter_700Bold, Inter_400Regular, useFonts } from "@expo-google-fonts/inter";
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from "react";
+import { useEffect, useReducer } from "react";
+import { AuthContextProvider, useAuth } from "./context/AuthContext";
 
 SplashScreen.preventAutoHideAsync();
 
-export default function Layout() {
+const MainLayout = () => {
+    const {isAuthenticated} = useAuth();
+    const segments = useSegments();
+    const router = useRouter();
+
+    useEffect(() => {
+        //Checkea si el usuario está autenticado o no
+        if(typeof isAuthenticated=='undefined') return;
+        const inApp = segments[0]== '(app)';
+        if (isAuthenticated && !inApp){
+            //Redireccionar a index
+            router.replace('/');
+        }else if (isAuthenticated == false){
+            //Redireccionar a login
+            router.replace('/login');
+        }
+    }, [isAuthenticated])
+
+    return (   
+        <View style={{flex: 1}}>
+            <StatusBar style="auto"/>
+            <Slot />
+        </View>
+    );
+}
+
+export default function Root() {
 
     //Manejo de fuentes de texto
 
@@ -32,15 +59,8 @@ export default function Layout() {
     }
 
     return (
-        <View style={styles.conteiner}>
-            <StatusBar style="auto"/>
-            <Slot />
-        </View>
+        <AuthContextProvider>
+            <MainLayout />
+        </AuthContextProvider>
     );
 }
-
-const styles = StyleSheet.create({
-    conteiner: {
-        flex: 1,
-    }
-});
