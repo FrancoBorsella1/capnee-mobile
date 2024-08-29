@@ -1,10 +1,10 @@
 import { Text, Image, StyleSheet } from "react-native";
-import Fondo from "../../components/Fondo";
-import colors from "../../constants/colors";
-import { useRouter, Link } from "expo-router";
-import BotonL from "../../components/BotonL";
+import Fondo from "../../../components/Fondo";
+import colors from "../../../constants/colors";
+import { useRouter } from "expo-router";
+import BotonL from "../../../components/BotonL";
 
-const logo = require('../../assets/calculator.png');
+const logo = require('../../../assets/calculator.png');
 
 export default function Index() {
     const router = useRouter();
@@ -24,9 +24,6 @@ export default function Index() {
                 style={styles.boton}
                 onPress={handlePress}
             />
-            <Link href="/login">
-                Ir al login
-            </Link>
         </Fondo>
     );
 }

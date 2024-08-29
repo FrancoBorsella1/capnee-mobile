@@ -1,9 +1,9 @@
-import Fondo from "../../components/Fondo";
-import BotonL from "../../components/BotonL";
-import colors from "../../constants/colors";
+import Fondo from "../../../components/Fondo";
+import BotonL from "../../../components/BotonL";
+import colors from "../../../constants/colors";
 import { Text, Image, ScrollView, StyleSheet } from "react-native";
 
-const mathLogo = require('../../assets/math_symbols.png')
+const mathLogo = require('../../../assets/math_symbols.png')
 
 export default function Perfil() {
     return (
