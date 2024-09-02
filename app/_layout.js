@@ -20,16 +20,19 @@ const MainLayout = () => {
 
     useEffect(() => {
         //Checkea si el usuario está autenticado o no
-        if(typeof isAuthenticated=='undefined') return;
-        const inApp = segments[0]== '(app)';
-        if (isAuthenticated && !inApp){
+        if(typeof isAuthenticated === 'undefined') return;
+
+        //El usuario debe estar dentro de la carpeta de rutas protegidas: Todas las rutas bajo (app)
+        const inProtectedRoutes = segments[0] === '(app)' || segments[0] === '(app)/';
+
+        if (isAuthenticated && !inProtectedRoutes){
             //Redireccionar a index
             router.replace('/');
-        }else if (isAuthenticated == false){
+        } else if (!isAuthenticated && inProtectedRoutes){
             //Redireccionar a login
             router.replace('/login');
         }
-    }, [isAuthenticated])
+    }, [isAuthenticated, segments, router])
 
     return (   
         <View style={{flex: 1}}>
