@@ -33,6 +33,30 @@ export default function TabsLayout() {
                     tabBarIcon: ({ color }) => <User color={color}/>
                 }}
             />
+            <Tabs.Screen
+                name="opciones"
+                options={{
+                    href: null
+                }}
+            />
+            <Tabs.Screen
+                name="[bloqueId]/listaSubBloques"
+                options={{
+                    href: null
+                }}
+            />
+            <Tabs.Screen
+                name="[bloqueId]/[subBloqueId]/listaContenidos"
+                options={{
+                    href: null
+                }}
+            />
+            <Tabs.Screen
+                name="[bloqueId]/[subBloqueId]/[contenidoTematicoId]/ejercicio"
+                options={{
+                    href: null
+                }}
+            />
         </Tabs>
     );
 }
