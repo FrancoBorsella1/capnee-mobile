@@ -47,7 +47,7 @@ export default function BotonL({
         >
             {!habilitado && <Lock style={styles.lock}/>}
             <View style={styles.conteiner}>
-                <Text style={[styles.texto, {fontSize: tamanoFuente, flexShrink: 1}]}>
+                <Text style={[styles.texto, {fontSize: tamanoFuente}]}>
                     {titulo}
                 </Text>
             </View>
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
         marginTop: 10,
         marginBottom: 10,
         //Sombra para Android
-        elevation: 5
+        elevation: 5,
     },
     botonDeshabilitado: {
         backgroundColor: colors.gris,
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     texto: {
         fontFamily: 'Inter_700Bold',
         color: colors.blanco,
-        textAlign: 'center'
+        textAlign: 'center',
     },
     lock: {
         position: 'absolute',
