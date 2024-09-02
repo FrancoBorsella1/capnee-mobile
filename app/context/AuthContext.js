@@ -1,24 +1,56 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import axios from "axios";
+import * as SecureStore from 'expo-secure-store';
+// Para almacenar token en Web, ya que secure store no es soportado por la web
+import { Platform } from 'react-native';
 
 export const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
+    const API_URL = 'http://149.50.140.55:8081';
 
     useEffect(() => {
-        setIsAuthenticated(false);
+        const loadUser = async () => {
+            const token = await getToken();
+            if (token) {
+                setIsAuthenticated(true);
+                console.log('Token encontrado, autenticado');
+            } else {
+                setIsAuthenticated(false);
+                console.log('No se encontró token, no autenticado');
+            }
+        };
+        loadUser();
     }, [])
 
-    const login = async (username, password) => {
-        const usuarioPrueba = 'franco';
-        const contrasenaPrueba = '1234';
+    //Recuperar el token dependiendo de la plataforma
 
+    const getToken = async () => {
+        if (Platform.OS === 'web') {
+            return window.localStorage.getItem('token-jwt');
+        } else {
+            return await SecureStore.getItemAsync('token-jwt');
+        }
+    };
+
+
+    const login = async (user, password) => {
         try{
+            const response = await axios.post(`${API_URL}/auth/user-password`, {user, password});
+            if (response.data) {
+                const accessToken = response.data.accessToken;
 
-            if (username === usuarioPrueba && password === contrasenaPrueba) {
-                setUser({ username });
+                if (Platform.OS === 'web') {
+                    window.localStorage.setItem('token-jwt', accessToken);
+                } else {
+                    await SecureStore.setItemAsync('token-jwt', accessToken);
+                }
+
+                setUser({ user });
                 setIsAuthenticated(true);
+
                 console.log('Inicio de sesión exitoso');
                 return true;
             } else {
@@ -28,22 +60,37 @@ export const AuthContextProvider = ({ children }) => {
 
         }catch(error){
             console.error('Error durante el inicio de sesión: ', error);
+            setIsAuthenticated(false);
             return false;
         }
     }
 
     const logout = async () => {
         try{
+            if (Platform.OS === 'web') {
+                window.localStorage.removeItem('token-jwt');
+            } else {
+                await SecureStore.deleteItemAsync('token-jwt');
+            }
+
             setUser(null);
             setIsAuthenticated(false);
             console.log('Cierre de sesión exitoso');
         }catch(error){
-            console.error('Error durante el cierre de sesión: ', error);
+            if (error.response) {
+                if (error.response.status === 401) {
+                    console.error('Error 401: No autorizado');
+                } else {
+                    console.error('Error en la respuesta del servidor: ', error.response.data);        
+                }
+            } else if (error.request) {
+                console.error('Error durante el cierre de sesión: ', error);
+            }
         }
     }
 
     return (
-        <AuthContext.Provider value={{user, isAuthenticated, login, logout}}>
+        <AuthContext.Provider value={{user, isAuthenticated, login, logout, getToken }}>
             {children}
         </AuthContext.Provider>
     )
