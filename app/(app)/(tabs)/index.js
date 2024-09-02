@@ -35,12 +35,14 @@ const styles = StyleSheet.create({
     },
     texto1: {
         fontFamily: "Inter_700Bold",
-        fontSize: 32
+        fontSize: 32,
+        textAlign: 'center'
     },
     texto2: {
         fontFamily: "Inter_400Regular",
         fontSize: 24,
         marginTop: -5,
-        marginBottom: 20
+        marginBottom: 20,
+        textAlign: 'center'
     }
 })
