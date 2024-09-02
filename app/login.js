@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, Image, TextInput, Alert } from "react-native";
+import { Text, ScrollView, View, StyleSheet, Image, TextInput } from "react-native";
 import { useRouter } from "expo-router";
 import Fondo from "../components/Fondo";
 import colors from "../constants/colors";
@@ -13,8 +13,12 @@ export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [mensajeError, setMensajeError] = useState('');
-    const { login, isAuthenticated } = useAuth();
+    const { login } = useAuth();
     const router = useRouter();
+
+    const handlePress = () => {
+        router.push('/loginFacial')
+    }
 
     const handleLogin = async () => {
         setMensajeError('');
@@ -35,33 +39,36 @@ export default function Login() {
     return(
         <Fondo color={colors.violeta}>
             <Image source={logo} style={styles.image}/>
-            <View style={styles.conteiner}>
+            <ScrollView style={styles.conteiner} contentContainerStyle={{alignItems: 'center'}}>
                 <Text style={styles.texto}>¡Bienvenido/a!</Text>
-                <TextInput
-                    value={username}
-                    onChangeText={setUsername} 
-                    style={styles.textInput}
-                    placeholder="Usuario/a"
-                    maxLength={20}
-                />
-                <TextInput                     
-                    value={password}
-                    onChangeText={setPassword} 
-                    style={styles.textInput}
-                    placeholder="Contraseña"
-                    maxLength={20}
-                    secureTextEntry={true}
-                />
-                {mensajeError ? <Text style={styles.errorText}>{mensajeError}</Text> : null}
-                <BotonS
-                    titulo="Iniciar sesión"
-                    onPress={handleLogin}
-                />
-                <BotonL
-                    titulo="Inicio de sesión facial"
-                    tamanoFuente={24}
-                />         
-            </View>
+                <View style={styles.form}>
+                    <TextInput
+                        value={username}
+                        onChangeText={setUsername} 
+                        style={styles.textInput}
+                        placeholder="Usuario/a"
+                        maxLength={20}
+                    />
+                    <TextInput                     
+                        value={password}
+                        onChangeText={setPassword} 
+                        style={styles.textInput}
+                        placeholder="Contraseña"
+                        maxLength={20}
+                        secureTextEntry={true}
+                    />
+                    {mensajeError ? <Text style={styles.errorText}>{mensajeError}</Text> : null}
+                    <BotonS
+                        titulo="Iniciar sesión"
+                        onPress={handleLogin}
+                    />
+                    <BotonL
+                        titulo="Inicio de sesión facial"
+                        tamanoFuente={24}
+                        onPress={handlePress}
+                    />
+                </View>       
+            </ScrollView>
         </Fondo>
     );
 }
@@ -74,8 +81,12 @@ const styles = StyleSheet.create({
         marginTop: 'auto',
         borderTopRightRadius: 50,
         borderTopLeftRadius: 50,
-        alignItems: 'center',
         padding: 10
+    },
+    form: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 5
     },
     image: {
         height: '20%',
@@ -89,7 +100,7 @@ const styles = StyleSheet.create({
         margin: 15
     },
     textInput: {
-        height: 60,
+        minHeight: 60,
         width: 300,
         borderRadius: 10,
         backgroundColor: colors.grisClaro,
@@ -103,5 +114,4 @@ const styles = StyleSheet.create({
         fontFamily: 'Inter_700Bold',
         color: colors.rojo
     }
-
 });
