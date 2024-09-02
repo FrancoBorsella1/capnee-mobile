@@ -27,6 +27,10 @@ export const Close = (props) => (
     <FontAwesome6 name="xmark" size={28} color="white" {...props} />
 );
 
+export const Eye = (props) => (
+    <FontAwesome6 name="eye" size={28} color="white" {...props} />
+);
+
 //Tab-bar
 
 export const User = (props) => (
