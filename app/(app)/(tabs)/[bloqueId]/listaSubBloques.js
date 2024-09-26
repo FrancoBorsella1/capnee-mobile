@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import { useAuth } from "../../../context/AuthContext";
+import Header from "../../../../components/Header";
+import Constants from 'expo-constants';
 
 const API_URL = 'http://149.50.140.55:8082';
 
@@ -18,9 +20,9 @@ export default function SubBloques() {
     const [error, setError] = useState(null);
     const router = useRouter();
     
-    //Recuperar bloqueId de
-    const { bloqueId } = useLocalSearchParams();
-
+    //Recuperar bloqueId y nombre del bloque al que se accedió
+    const { bloqueId, pantallaAnterior } = useLocalSearchParams();
+    
     //Recuperar token y estado de autenticación del AuthContext
     const { getToken, isAuthenticated } = useAuth();
 
@@ -35,7 +37,7 @@ export default function SubBloques() {
                 }
             });
             setSubBloques(response.data);
-            console.log('Datos: ', subBloques);
+            console.log('Sub-bloques: ', subBloques);
         } catch (e) {
             console.error('Error al obtener Sub-bloques: ', e);
             setError('Error al obtener los Sub-bloques.');
@@ -61,23 +63,42 @@ export default function SubBloques() {
         );
     }
 
-
     if (error) {
         return <Text>{error}</Text>
     }
 
+    //Navegación a contenidos temáticos asociado a un sub-bloque por ID
+    const handleSubBlockPress = (subBloqueId, subBloqueNombre) => {
+        router.push({
+            pathname: `/${bloqueId}/${subBloqueId}/listaContenidos`,
+            params: { 
+                pantallaAnterior: subBloqueNombre,
+            }
+        });
+    };
+
+    //Volver a pantalla bloques
+    const handleBack = () => {
+        router.push({
+            pathname: `/bloques`,
+            params: { pantallaAnterior }
+        });
+    };
 
     return (
         <Fondo color={colors.celeste}>
+            <Header
+                onPress={handleBack}
+                nombrePagina={pantallaAnterior}
+            />
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner}>
-                <Text style={styles.texto}>Nombre del Bloque asociado</Text>
                 {subBloques.map((subBloque) => (
                     <BotonL
                         key={subBloque.id}
                         titulo={subBloque.name}
                         tamanoFuente={30}
                         habilitado={subBloque.isEnabled}
-                        // onPress={() => handleBlockPress(bloque.id)}
+                        onPress={() => handleSubBlockPress(subBloque.id)}
                     />
                 ))}
             </ScrollView>
@@ -88,17 +109,11 @@ export default function SubBloques() {
 const styles = StyleSheet.create({
     scrollView: {
         width: '100%',
-        paddingTop: '10%'
+        marginTop: Constants.statusBarHeight + 60
     },
     conteiner: {
         width: '100%',
         alignItems: 'center',
         paddingBottom: 10
     },
-    texto: {
-        fontSize: 32,
-        fontFamily: 'Inter_700Bold',
-        margin: 15,
-        textAlign: 'center'
-    }
 });
