@@ -1,9 +1,11 @@
 import BotonS from "../../../components/BotonS";
 import Fondo from "../../../components/Fondo";
+import Header from "../../../components/Header";
 import colors from "../../../constants/colors";
 import { Text, View, StyleSheet } from "react-native";
 import { Camera, Eye, Smiley } from "../../../components/Icons";
 import { useState } from "react";
+import { useRouter } from "expo-router";
 
 export default function Opciones() {
     //Estados para manejar el cambio de color y texto del botón cuando se activa y desactiva
@@ -18,8 +20,19 @@ export default function Opciones() {
         }
     }
 
+    const router = useRouter();
+
+    //Volver a la ruta anterior
+    const handleBack = () => {
+        router.replace('/perfil')
+    }
+
     return (
         <Fondo color={colors.amarillo}>
+            <Header
+                nombrePagina='Ajustes'
+                onPress={handleBack}
+            />
             <View style={styles.container}>
                 <Text style={styles.text}>Inicio de sesión</Text>
                 <BotonS
