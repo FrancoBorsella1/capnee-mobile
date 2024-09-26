@@ -52,7 +52,13 @@ export default function TabsLayout() {
                 }}
             />
             <Tabs.Screen
-                name="[bloqueId]/[subBloqueId]/[contenidoTematicoId]/ejercicio"
+                name="[bloqueId]/[subBloqueId]/[contenidoTematicoId]/listaEjercicios"
+                options={{
+                    href: null
+                }}
+            />
+            <Tabs.Screen
+                name="[bloqueId]/[subBloqueId]/[contenidoTematicoId]/[ejercicioId]/ejercicio"
                 options={{
                     href: null
                 }}
