@@ -23,7 +23,7 @@ const MainLayout = () => {
         if(typeof isAuthenticated === 'undefined') return;
 
         //El usuario debe estar dentro de la carpeta de rutas protegidas: Todas las rutas bajo (app)
-        const inProtectedRoutes = segments[0] === '(app)' || segments[0] === '(app)/';
+        const inProtectedRoutes = segments[0] === '(app)';
 
         if (isAuthenticated && !inProtectedRoutes){
             //Redireccionar a index
