@@ -34,7 +34,7 @@ export default function Bloques() {
                 }
             });
             setBloques(response.data);
-            console.log('Datos: ', bloques);
+            console.log('Bloques: ', bloques);
         } catch (e) {
             console.error('Error al obtener bloques: ', e);
             setError('Error al obtener los bloques.');
@@ -63,9 +63,14 @@ export default function Bloques() {
         return <Text>{error}</Text>
     }
 
-    //Navegación a un sub-bloque asociado a un bloque por ID
-    const handleBlockPress = (bloqueId) => {
-        router.push(`/${bloqueId}/listaSubBloques`);
+    //Navegación a sub-bloques asociados a un bloque por ID
+    const handleBlockPress = (bloqueId, bloqueNombre) => {
+        router.push({
+            pathname: `/${bloqueId}/listaSubBloques`,
+            params: { 
+                pantallaAnterior: bloqueNombre,
+            }
+        });
     };
 
     return (
@@ -79,7 +84,7 @@ export default function Bloques() {
                         titulo={bloque.name}
                         tamanoFuente={36}
                         habilitado={bloque.isEnabled}
-                        onPress={() => handleBlockPress(bloque.id)}
+                        onPress={() => handleBlockPress(bloque.id, bloque.name)}
                     />
                 ))}
             </ScrollView>
@@ -94,7 +99,7 @@ const styles = StyleSheet.create({
     image: {
         width: 130,
         height: 130,
-        marginTop: 60,
+        marginTop: 20,
     },
     conteiner: {
         width: '100%',
