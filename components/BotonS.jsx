@@ -26,11 +26,20 @@ export default function BotonS({
     colorFondo = colors.violeta,
     IconoComponente,
     tamanoFuente = 24,
-    onPress
+    onPress,
+    tamano
 }) {
     
     // Función para oscurecer al botón cuando se presiona
     const colorFondoOscuro = darkenColor(colorFondo);
+
+    //Manejar el estilo dependiendo del tamaño que se pase por parámetro
+    const estiloBoton = [styles.boton];
+
+    //Si el boton es para una opción de ejercicio, se deberá pasar por parámetro 'tamano = opcion' para que se apliquen esos estilos
+    if (tamano === 'opcion') {
+        estiloBoton.push(styles.opcion);
+    }
 
     return (
         <Pressable
@@ -39,7 +48,7 @@ export default function BotonS({
                 {
                     backgroundColor: pressed ? colorFondoOscuro : colorFondo,
                 },
-                styles.boton
+                estiloBoton
             ]}
         >
             <View style={styles.conteiner}>
@@ -84,6 +93,10 @@ const styles = StyleSheet.create({
     texto: {
         fontFamily: 'Inter_700Bold',
         color: colors.blanco,
+    },
+    opcion: {
+        width: 150,
+        height: 100
     }
 }
 )
