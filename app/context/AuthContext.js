@@ -3,6 +3,7 @@ import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
 // Para almacenar token en Web, ya que secure store no es soportado por la web
 import { Platform } from 'react-native';
+import { useRouter } from "expo-router";
 
 export const AuthContext = createContext();
 
@@ -10,6 +11,7 @@ export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
     const API_URL = 'http://149.50.140.55:8081';
+    const router = useRouter();
 
     useEffect(() => {
         const loadUser = async () => {
@@ -23,6 +25,24 @@ export const AuthContextProvider = ({ children }) => {
             }
         };
         loadUser();
+
+        // Verificar si el token es válido
+        const interceptor = axios.interceptors.response.use(
+            response => response,
+            async (error) => {
+                if (error.response && error.response.status === 401) {
+                    // Si el token está expirado y el usuario no tiene acceso, se desloguea
+                    await logout(); 
+                    router.replace('/login'); // Redirigir al login
+                }
+                return Promise.reject(error);
+            }
+        );
+
+        // Limpieza del interceptor al desmontar el componente
+        return () => {
+            axios.interceptors.response.eject(interceptor);
+        };
     }, [])
 
     //Recuperar el token dependiendo de la plataforma
@@ -35,7 +55,7 @@ export const AuthContextProvider = ({ children }) => {
         }
     };
 
-
+    //Login
     const login = async (user, password) => {
         try{
             const response = await axios.post(`${API_URL}/auth/user-password`, {user, password});
@@ -65,6 +85,7 @@ export const AuthContextProvider = ({ children }) => {
         }
     }
 
+    //Logout
     const logout = async () => {
         try{
             if (Platform.OS === 'web') {
