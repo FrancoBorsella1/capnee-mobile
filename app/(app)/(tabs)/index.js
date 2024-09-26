@@ -3,10 +3,12 @@ import Fondo from "../../../components/Fondo";
 import colors from "../../../constants/colors";
 import { useRouter } from "expo-router";
 import BotonL from "../../../components/BotonL";
+import { useState } from "react";
 
 const logo = require('../../../assets/calculator.png');
 
 export default function Index() {
+    const [user, setUser] = useState({});
     const router = useRouter();
 
     const handlePress = () => {
