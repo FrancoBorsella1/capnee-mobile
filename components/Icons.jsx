@@ -31,6 +31,14 @@ export const Eye = (props) => (
     <FontAwesome6 name="eye" size={28} color="white" {...props} />
 );
 
+export const Back = (props) => (
+    <FontAwesome6 name="arrow-left" size={28} color="black" {...props} />
+);
+
+export const BackWhite = (props) => (
+    <FontAwesome6 name="arrow-left" size={28} color="white" {...props} />
+);
+
 //Tab-bar
 
 export const User = (props) => (
