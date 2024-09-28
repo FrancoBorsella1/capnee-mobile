@@ -1,4 +1,4 @@
-import { ScrollView, View, Text, Image, StyleSheet, Modal } from "react-native";
+import { ScrollView, View, Text, Image, StyleSheet, Modal, Animated } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Fondo from "../../../../../../../components/Fondo";
 import Header from "../../../../../../../components/Header";
@@ -6,7 +6,7 @@ import BotonS from "../../../../../../../components/BotonS";
 import { BackWhite } from "../../../../../../../components/Icons";
 import colors from "../../../../../../../constants/colors";
 import Constants from 'expo-constants';
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Audio } from "expo-av";
 
 const imagenEnunciadoEjemplo = require('../../../../../../../assets/ejemplo_ejercicio.jpg');
@@ -30,6 +30,9 @@ export default function Ejercicio(){
     const [errorSound, setErrorSound] = useState();
     const [correctSound, setCorrectSound] = useState();
 
+    //Variable para animación de temblar
+    const shakeAnimation = useRef(new Animated.Value(0)).current;
+
     const router = useRouter();
 
     //Recuperar parámetros de ruta
@@ -48,9 +51,35 @@ export default function Ejercicio(){
             playCorrectSound();
 
         } else {
-            alert('Inténtalo de nuevo.');
+            temblar();
             playErrorSound();
         }
+    }
+
+    // Función para animación de temblar
+    const temblar = () => {
+        Animated.sequence([
+            Animated.timing(shakeAnimation, {
+                toValue: 10,
+                duration: 50,
+                useNativeDriver: true,
+            }),
+            Animated.timing(shakeAnimation, {
+                toValue: -10,
+                duration: 50,
+                useNativeDriver: true,
+            }),
+            Animated.timing(shakeAnimation, {
+                toValue: 10,
+                duration: 50,
+                useNativeDriver: true,
+            }),
+            Animated.timing(shakeAnimation, {
+                toValue: 0,
+                duration: 50,
+                useNativeDriver: true,
+            }),
+        ]).start();
     }
 
     //Reproducir sonido de error
@@ -67,7 +96,6 @@ export default function Ejercicio(){
         await sound.playAsync();
     }
 
-    
     useEffect(() => {
         return () => {
             if (correctSound) {
@@ -79,7 +107,6 @@ export default function Ejercicio(){
             }
         };
     }, [correctSound, errorSound]);
-
 
     return(
         <Fondo color={colors.celeste}>
@@ -118,7 +145,7 @@ export default function Ejercicio(){
                     resizeMode="contain"
                 />
             </View>
-            <ScrollView>
+            <Animated.ScrollView style={[{ transform: [{ translateX: shakeAnimation }]} ]}>
                 {ejercicio.opciones.map((opcion, index) => (
                     <BotonS
                         key={index}
@@ -126,7 +153,7 @@ export default function Ejercicio(){
                         onPress={() => handlePress(opcion)}
                     />
                 ))}
-            </ScrollView>
+            </Animated.ScrollView>
         </Fondo>
     )
 }
