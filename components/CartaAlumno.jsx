@@ -3,7 +3,7 @@ import colors from "../constants/colors";
 
 export default function CartaAlumno({
     nombre = 'Nombre Apellido',
-    curso = 'Curso: X°X - 20XX'
+    curso = 'X°X - 20XX'
     //Cambiar por los datos reales que devuelve la petición Año, división, Ciclo lectivo, etc
 }) {
     return (
@@ -11,7 +11,7 @@ export default function CartaAlumno({
             <Image style={styles.image}/>
             <View style={styles.carta}>
                 <Text style={styles.nombre}>{nombre}</Text>
-                <Text style={styles.curso}>{curso}</Text>
+                <Text style={styles.curso}>Curso: {curso}</Text>
             </View>
         </View>
     );
