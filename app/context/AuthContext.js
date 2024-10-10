@@ -10,6 +10,7 @@ export const AuthContext = createContext();
 export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
+    const [cursoId, setCursoId] = useState(null);
     const API_URL = 'http://149.50.140.55:8081';
     const router = useRouter();
 
@@ -96,6 +97,7 @@ export const AuthContextProvider = ({ children }) => {
 
             setUser(null);
             setIsAuthenticated(false);
+            setCursoId(null);
             console.log('Cierre de sesión exitoso');
         }catch(error){
             if (error.response) {
@@ -111,7 +113,7 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{user, isAuthenticated, login, logout, getToken }}>
+        <AuthContext.Provider value={{user, isAuthenticated, login, logout, getToken, cursoId, setCursoId }}>
             {children}
         </AuthContext.Provider>
     )
