@@ -15,29 +15,29 @@ const API_URL = 'http://149.50.140.55:8082';
 let courseId = 1;
 
 export default function Contenidos() {
+    const [nombreSubBloque, setNombreSubBloque] = useState("");
     const [contenidos, setContenidos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const router = useRouter();
     
     //Recuperar id y nombre del sub-bloque al que se accedió
-    const { bloqueId, subBloqueId, pantallaAnterior } = useLocalSearchParams();
+    const { bloqueId, subBloqueId } = useLocalSearchParams();
 
     //Recuperar token y estado de autenticación del AuthContext
-    const { getToken, isAuthenticated } = useAuth();
+    const { getToken, isAuthenticated, cursoId } = useAuth();
 
     const getContenidos = async () => {
         try {
             const token = await getToken();
-            console.log('Token', token);
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            const response = await axios.get(`${API_URL}/thematic-content/get-all-by-thematic-subblock-id-and-course-id?thematicSubblockId=${subBloqueId}&courseId=${courseId}`, {
+            const response = await axios.get(`${API_URL}/thematic-content/get-all-by-thematic-subblock-id-and-course-id?thematicSubblockId=${subBloqueId}&courseId=${cursoId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            setContenidos(response.data);
-            console.log('Contenidos temáticos: ', contenidos);
+            setNombreSubBloque(response.data.thematicSubblock)
+            setContenidos(response.data.thematicContents);
         } catch (e) {
             console.error('Error al obtener Contenidos: ', e);
             setError('Error al obtener los Contenidos.');
@@ -68,12 +68,9 @@ export default function Contenidos() {
     }
 
     //Navegación a ejercicios asociados a un contenido por ID
-    const handleContentPress = (contenidoTematicoId, contenidoTematicoNombre) => {
+    const handleContentPress = (contenidoTematicoId) => {
         router.push({
             pathname: `/${bloqueId}/${subBloqueId}/${contenidoTematicoId}/listaEjercicios`,
-            params: {
-                pantallaAnterior: contenidoTematicoNombre,
-            }
         });
     };
 
@@ -81,7 +78,6 @@ export default function Contenidos() {
     const handleBack = () => {
         router.push({
             pathname: `/${bloqueId}/listaSubBloques`,
-            params: { pantallaAnterior }
         });
     };
 
@@ -89,7 +85,7 @@ export default function Contenidos() {
         <Fondo color={colors.celeste}>
             <Header
                 onPress={handleBack}
-                nombrePagina={pantallaAnterior}
+                nombrePagina={nombreSubBloque}
             />
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner}>
                 {contenidos.map((contenido) => (

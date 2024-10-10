@@ -17,7 +17,7 @@ const imagenModal = require('../../../../../../../assets/calculator2.png')
 const ejercicio = { 
         id: 1,
         titulo: 'Ejercicio',
-        enunciado: '¿Cuántos dedos tiene el ser humano?',
+        enunciado: '¿Cuántos dedos tiene el ser humano normal?',
         opciones: [4, 6, 5, 7],
         posicionOpcionCorrecta: 2
 }
@@ -151,6 +151,7 @@ export default function Ejercicio(){
                         key={index}
                         titulo={opcion}
                         onPress={() => handlePress(opcion)}
+                        reproducirSonido={false}
                     />
                 ))}
             </Animated.ScrollView>

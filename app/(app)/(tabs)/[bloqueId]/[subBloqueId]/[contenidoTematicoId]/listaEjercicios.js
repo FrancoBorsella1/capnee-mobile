@@ -14,34 +14,30 @@ const API_URL = 'http://149.50.140.55:8082';
 //Imagen que se muestra si no hay ejercicios cargados
 const imagenAviso = require('../../../../../../assets/calculator3.png');
 
-//HARDCODEADO POR AHORA
-let courseId = 1;
-let ejercicioId = 1;
-
-export default function Contenidos() {
+export default function Ejercicios() {
+    const [nombreContenido, setNombreContenido] = useState("");
     const [ejercicios, setEjercicios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const router = useRouter();
     
     //Recuperar parámetros de ruta
-    const { bloqueId, subBloqueId, contenidoTematicoId, pantallaAnterior } = useLocalSearchParams();
+    const { bloqueId, subBloqueId, contenidoTematicoId } = useLocalSearchParams();
 
     //Recuperar token y estado de autenticación del AuthContext
-    const { getToken, isAuthenticated } = useAuth();
+    const { getToken, isAuthenticated, cursoId } = useAuth();
 
     const getEjercicios = async () => {
         try {
             const token = await getToken();
-            console.log('Token', token);
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            const response = await axios.get(`${API_URL}/exercises/get-all-by-course-id-and-thematic-content-id?courseId=${courseId}&thematicContentId=${contenidoTematicoId}`, {
+            const response = await axios.get(`${API_URL}/exercises/get-all-by-course-id-and-thematic-content-id?courseId=${cursoId}&thematicContentId=${contenidoTematicoId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            setEjercicios(response.data);
-            console.log('Datos: ', ejercicios);
+            setNombreContenido(response.data.thematicContent);
+            setEjercicios(response.data.exercises);
         } catch (e) {
             console.error('Error al obtener Ejercicios: ', e);
             setError('Error al obtener los Ejercicios.');
@@ -72,7 +68,7 @@ export default function Contenidos() {
     }
 
     //Navegar hacia un ejercicio en particular
-    const handleExercisePress = () => {
+    const handleExercisePress = (ejercicioId) => {
         router.push(`/${bloqueId}/${subBloqueId}/${contenidoTematicoId}/${ejercicioId}/ejercicio`)
     };
 
@@ -80,7 +76,6 @@ export default function Contenidos() {
     const handleBack = () => {
         router.push({
             pathname: `/${bloqueId}/${subBloqueId}/listaContenidos`,
-            params: { pantallaAnterior }
         });
     };
 
@@ -89,7 +84,7 @@ export default function Contenidos() {
         <Fondo color={colors.celeste}>
             <Header
                 onPress={handleBack}
-                nombrePagina={`Ejercicios ${"Contenido temático"}`}
+                nombrePagina={`Ejercicios: ${nombreContenido}`}
             />
             { ejercicios.length > 0 ?
                 <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner}>

@@ -11,33 +11,30 @@ import Constants from 'expo-constants';
 
 const API_URL = 'http://149.50.140.55:8082';
 
-//HARDCODEADO POR AHORA
-let courseId = 1;
-
 export default function SubBloques() {
+    const [nombreBloque, setNombreBloque] = useState("");
     const [subBloques, setSubBloques] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const router = useRouter();
     
     //Recuperar bloqueId y nombre del bloque al que se accedió
-    const { bloqueId, pantallaAnterior } = useLocalSearchParams();
+    const { bloqueId } = useLocalSearchParams();
     
     //Recuperar token y estado de autenticación del AuthContext
-    const { getToken, isAuthenticated } = useAuth();
+    const { getToken, isAuthenticated, cursoId } = useAuth();
 
     const getSubBloques = async () => {
         try {
             const token = await getToken();
-            console.log('Token', token);
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            const response = await axios.get(`${API_URL}/thematic-subblocks/get-all-by-course-and-thematic-block?courseId=${courseId}&thematicBlockId=${bloqueId}`, {
+            const response = await axios.get(`${API_URL}/thematic-subblocks/get-all-by-course-and-thematic-block?courseId=${cursoId}&thematicBlockId=${bloqueId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            setSubBloques(response.data);
-            console.log('Sub-bloques: ', subBloques);
+            setNombreBloque(response.data.thematicBlock);
+            setSubBloques(response.data.subBlocks);
         } catch (e) {
             console.error('Error al obtener Sub-bloques: ', e);
             setError('Error al obtener los Sub-bloques.');
@@ -68,12 +65,9 @@ export default function SubBloques() {
     }
 
     //Navegación a contenidos temáticos asociado a un sub-bloque por ID
-    const handleSubBlockPress = (subBloqueId, subBloqueNombre) => {
+    const handleSubBlockPress = (subBloqueId) => {
         router.push({
             pathname: `/${bloqueId}/${subBloqueId}/listaContenidos`,
-            params: { 
-                pantallaAnterior: subBloqueNombre,
-            }
         });
     };
 
@@ -81,7 +75,6 @@ export default function SubBloques() {
     const handleBack = () => {
         router.push({
             pathname: `/bloques`,
-            params: { pantallaAnterior }
         });
     };
 
@@ -89,18 +82,22 @@ export default function SubBloques() {
         <Fondo color={colors.celeste}>
             <Header
                 onPress={handleBack}
-                nombrePagina={pantallaAnterior}
+                nombrePagina={nombreBloque}
             />
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner}>
-                {subBloques.map((subBloque) => (
-                    <BotonL
-                        key={subBloque.id}
-                        titulo={subBloque.name}
-                        tamanoFuente={30}
-                        habilitado={subBloque.isEnabled}
-                        onPress={() => handleSubBlockPress(subBloque.id)}
-                    />
-                ))}
+                {Array.isArray(subBloques) && subBloques.length > 0 ? (
+                    subBloques.map((subBloque) => (
+                        <BotonL
+                            key={subBloque.id}
+                            titulo={subBloque.name}
+                            tamanoFuente={30}
+                            habilitado={subBloque.isEnabled}
+                            onPress={() => handleSubBlockPress(subBloque.id, subBloque.name)}
+                        />
+                    ))
+                ) : (
+                    <Text>No hay sub-bloques disponibles</Text>
+                )}
             </ScrollView>
         </Fondo>
     )

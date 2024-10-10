@@ -6,12 +6,11 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
+import { jwtDecode } from "jwt-decode";
 
 const mathLogo = require('../../../assets/math_symbols.png');
-const API_URL = 'http://149.50.140.55:8082';
-
-//CAMBIAR ESTE CURSO A ID DEPENDIENDO DEL USUARIO, POR AHORA ESTÄ HARDCODEADO
-let courseId = 1;
+const API_URL_USER = 'http://149.50.140.55:8081';
+const API_URL_ACADEMY = 'http://149.50.140.55:8082';
 
 export default function Bloques() {
     //Estados para manejar la carga de bloques
@@ -21,20 +20,19 @@ export default function Bloques() {
     const router = useRouter();
 
     //Recuperar token y estado de autenticación del AuthContext
-    const { getToken, isAuthenticated } = useAuth();
+    const { getToken, isAuthenticated, setCursoId, cursoId } = useAuth();
 
     const getBloques = async () => {
         try {
             const token = await getToken();
-            console.log('Token', token);
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            const response = await axios.get(`${API_URL}/thematic-blocks/get-all-by-course?id=${courseId}`, {
+            const response = await axios.get(`${API_URL_ACADEMY}/thematic-blocks/get-all-by-course?id=${cursoId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
             setBloques(response.data);
-            console.log('Bloques: ', bloques);
+            // console.log('Bloques: ', bloques);
         } catch (e) {
             console.error('Error al obtener bloques: ', e);
             setError('Error al obtener los bloques.');
@@ -43,13 +41,51 @@ export default function Bloques() {
         }
     };
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            getBloques();
-        } else {
-            setLoading(false);
+    const getCourse = async () => {
+        try {
+            //Obtener token
+            const token = await getToken();
+
+            if (!token) {
+                throw new Error("Token no disponible");
+            };
+
+            //Decodificar token
+            const decoded = jwtDecode(token);
+
+            if (!decoded) {
+                throw new Error("El token no es válido");
+            };
+
+            //Petición para traer alumno por id
+            const response = await axios.get(`${API_URL_USER}/person/get-by-id?id=${decoded.sub}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            setCursoId(response.data.courseId);
+
+        } catch (error) {
+            console.error('Error decodificando el token: ', error);
         }
-    }, [isAuthenticated]);
+    }
+
+    useEffect(() => {
+        const fetchCourseAndBlocks = async () => {
+            if (isAuthenticated) {
+                await getCourse(); 
+                if (cursoId) {  
+                    await getBloques();     
+                }
+            } else {
+                setLoading(false);
+            }
+        };
+    
+        fetchCourseAndBlocks();
+    }, [isAuthenticated, cursoId]);  
+    
 
     if (loading) {
         return (
@@ -64,11 +100,11 @@ export default function Bloques() {
     }
 
     //Navegación a sub-bloques asociados a un bloque por ID
-    const handleBlockPress = (bloqueId, bloqueNombre) => {
+    const handleBlockPress = (bloqueId) => {
         router.push({
             pathname: `/${bloqueId}/listaSubBloques`,
-            params: { 
-                pantallaAnterior: bloqueNombre,
+            params: {
+                cursoId: cursoId
             }
         });
     };
@@ -84,7 +120,7 @@ export default function Bloques() {
                         titulo={bloque.name}
                         tamanoFuente={36}
                         habilitado={bloque.isEnabled}
-                        onPress={() => handleBlockPress(bloque.id, bloque.name)}
+                        onPress={() => handleBlockPress(bloque.id)}
                     />
                 ))}
             </ScrollView>
