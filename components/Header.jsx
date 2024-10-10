@@ -2,16 +2,52 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import colors from "../constants/colors";
 import { Back } from "./Icons";
 import Constants from 'expo-constants';
+import React, { useState } from "react";
+import { Audio } from "expo-av";
 
 export default function Header({ 
     nombrePagina,
     onPress 
 }) {
 
+// Variables de estado de sonido
+const [sound, setSound] = useState();
+
+    //Reproducir sonido
+    const playSound = async () => {
+        try {
+            const { sound } = await Audio.Sound.createAsync(
+                require('../assets/sounds/pop.mp3')
+            );
+            setSound(sound);
+            await sound.setVolumeAsync(0.1);
+            await sound.playAsync();
+        } catch (error) {
+            console.error("Error al reproducir el sonido: ", error);
+        }
+    };
+
+    //Descargar el sonido cuando el componente se desmonte
+    React.useEffect(() => {
+        return sound
+        ? () => {
+            sound.unloadAsync();
+        }
+        : undefined;
+    }, [sound]);
+
+    // Manejar la pulsación del botón
+    const handlePress = () => {
+        playSound();
+        if (onPress) {
+            onPress();
+        }
+    };
+
     return(
         <View style={styles.container}>
             <Pressable  
-                onPress={onPress}
+                onPress={handlePress}
                 style={({ pressed }) => [
                     {
                         backgroundColor: pressed ?  colors.grisClaro : colors.blanco,

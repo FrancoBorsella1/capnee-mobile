@@ -1,6 +1,8 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import colors from "../constants/colors";
 import { Lock } from "./Icons";
+import React, { useState } from "react";
+import { Audio } from "expo-av";
 
 // Función para oscurecer cualquier color
 const darkenColor = (color, factor = 0.2) => {
@@ -29,13 +31,47 @@ export default function BotonL({
     onPress,
     habilitado = true //El botón está habilitado por defecto. Cuando habilitado = false, el botón no puede utilizarse
 }) {
+    // Variables de estado de sonido
+    const [sound, setSound] = useState();
 
     // Función para oscurecer al botón cuando se presiona
     const colorFondoOscuro = darkenColor(colorFondo);
 
+    //Reproducir sonido
+    const playSound = async () => {
+        try {
+            const { sound } = await Audio.Sound.createAsync(
+                require('../assets/sounds/pop.mp3')
+            );
+            setSound(sound);
+            await sound.setVolumeAsync(0.1);
+            await sound.playAsync();
+        } catch (error) {
+            console.error("Error al reproducir el sonido: ", error);
+        }
+    };
+
+    //Descargar el sonido cuando el componente se desmonte
+    React.useEffect(() => {
+        return sound
+        ? () => {
+            sound.unloadAsync();
+        }
+        : undefined;
+    }, [sound]);
+
+    // Manejar la pulsación del botón
+    const handlePress = () => {
+        playSound();
+        if (onPress) {
+            onPress();
+        }
+    };
+
+
     return (
         <Pressable
-            onPress={habilitado ? onPress : null}
+            onPress={habilitado ? handlePress : null}
             style={({ pressed }) => [
                 {
                     backgroundColor: pressed ? colorFondoOscuro : colorFondo,

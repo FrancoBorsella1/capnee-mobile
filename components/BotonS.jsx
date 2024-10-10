@@ -1,5 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import colors from "../constants/colors";
+import React, { useState } from "react";
+import { Audio } from "expo-av";
 
 // Función para oscurecer cualquier color
 const darkenColor = (color, factor = 0.2) => {
@@ -27,9 +29,12 @@ export default function BotonS({
     IconoComponente,
     tamanoFuente = 24,
     onPress,
-    tamano
+    tamano,
+    reproducirSonido = true
 }) {
-    
+    // Variables de estado de sonido
+    const [sound, setSound] = useState();
+
     // Función para oscurecer al botón cuando se presiona
     const colorFondoOscuro = darkenColor(colorFondo);
 
@@ -41,9 +46,42 @@ export default function BotonS({
         estiloBoton.push(styles.opcion);
     }
 
+    //Reproducir sonido
+    const playSound = async () => {
+        if (reproducirSonido) {
+            try {
+                const { sound } = await Audio.Sound.createAsync(
+                    require('../assets/sounds/pop.mp3')
+                );
+                setSound(sound);
+                await sound.setVolumeAsync(0.1);
+                await sound.playAsync();
+            } catch (error) {
+                console.error("Error al reproducir el sonido: ", error);
+            }
+        }
+    };
+
+    //Descargar el sonido cuando el componente se desmonte
+    React.useEffect(() => {
+        return sound
+        ? () => {
+            sound.unloadAsync();
+        }
+        : undefined;
+    }, [sound]);
+
+    // Manejar la pulsación del botón
+    const handlePress = () => {
+        playSound();
+        if (onPress) {
+            onPress();
+        }
+    };
+
     return (
         <Pressable
-            onPress={onPress}
+            onPress={handlePress}
             style={({ pressed }) => [
                 {
                     backgroundColor: pressed ? colorFondoOscuro : colorFondo,
