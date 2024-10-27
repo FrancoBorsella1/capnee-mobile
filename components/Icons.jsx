@@ -39,6 +39,10 @@ export const BackWhite = (props) => (
     <FontAwesome6 name="arrow-left" size={28} color="white" {...props} />
 );
 
+export const Check = (props) => (
+    <FontAwesome6 name="check-circle" size={16} color="white" {...props} />
+);
+
 //Tab-bar
 
 export const User = (props) => (
