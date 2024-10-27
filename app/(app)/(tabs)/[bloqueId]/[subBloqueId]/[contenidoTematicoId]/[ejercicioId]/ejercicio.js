@@ -1,28 +1,24 @@
-import { ScrollView, View, Text, Image, StyleSheet, Modal, Animated } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { ScrollView, View, Text, Image, StyleSheet, Modal, Animated, ActivityIndicator } from "react-native";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import Fondo from "../../../../../../../components/Fondo";
 import Header from "../../../../../../../components/Header";
 import BotonS from "../../../../../../../components/BotonS";
 import { BackWhite } from "../../../../../../../components/Icons";
 import colors from "../../../../../../../constants/colors";
 import Constants from 'expo-constants';
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Audio } from "expo-av";
+import { useAuth } from "../../../../../../context/AuthContext";
+import axios from "axios";
 
-const imagenEnunciadoEjemplo = require('../../../../../../../assets/ejemplo_ejercicio.jpg');
+//Imagenes
+const imagenModal = require('../../../../../../../assets/calculator2.png');
+const medalla = require('../../../../../../../assets/medal.png');
 
-//Imagen Modal
-const imagenModal = require('../../../../../../../assets/calculator2.png')
-
-const ejercicio = { 
-        id: 1,
-        titulo: 'Ejercicio',
-        enunciado: '¿Cuántos dedos tiene el ser humano normal?',
-        opciones: [4, 6, 5, 7],
-        posicionOpcionCorrecta: 2
-}
+const API_URL = 'http://149.50.140.55:8082';
 
 export default function Ejercicio(){
+    const [ejercicio, setEjercicio] = useState([]);
     //Estado para manejar el Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -33,26 +29,120 @@ export default function Ejercicio(){
     //Variable para animación de temblar
     const shakeAnimation = useRef(new Animated.Value(0)).current;
 
+    //Estados para manejar el tiempo
+    const [tiempoEnPantalla, setTiempoEnPantalla] = useState(0);
+
+    //Contador de fallos
+    const [cantidadFallos, setCantidadFallos] = useState(0);
+
+    //Estado para ejercicio resuelto (HARDCODEADO)
+    const [resuelto, setResuelto] = useState(false);
+    const [opcionCorrecta, setOpcionCorrecta] = useState(null);
+
+    //Estados de error y de carga
+    const [error, setError] = useState(false);
+    const [loading, setLoading] = useState(true);
+
     const router = useRouter();
 
     //Recuperar parámetros de ruta
-    const { bloqueId, subBloqueId, contenidoTematicoId, ejercicioId, pantallaAnterior } = useLocalSearchParams();
+    const { bloqueId, subBloqueId, contenidoTematicoId, ejercicioId, isResolved } = useLocalSearchParams();
+
+    //Recuperar token y estado de autenticación
+    const { getToken, isAuthenticated, estudianteId } = useAuth();
+
+    const getEjercicio = async () => {
+        try {
+            const token = await getToken();
+            const response = await axios.get(`${API_URL}/exercises/get-by-id?id=${ejercicioId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setEjercicio(response.data);
+            setOpcionCorrecta(response.data.options[response.data.correctOptionPosition]);
+
+        } catch (e) {
+            console.error('Error al obtener ejercicio: ', e);
+            setError('Error al obtener el ejercicio.')
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    //Obtener el ejercicio
+    useEffect(() => {
+        if (isAuthenticated) {
+            getEjercicio();
+        } else {
+            setLoading(false);
+        }
+    }, [isAuthenticated, ejercicioId]);
+
+    //Obtener el estado de ejercicio (Resuelto o no resuelto) cuando se monta el componente
+    useEffect(() => {
+        if (isResolved !== undefined) {
+            setResuelto(isResolved === 'true');
+        }
+    }, [isResolved]);
+
+    //Capturar el tiempo de estadía en pantalla
+    useFocusEffect(
+        React.useCallback(() => {
+            if (resuelto) return;
+            let intervalo;
+
+            // eslint-disable-next-line no-undef
+            intervalo = setInterval(() => {
+                setTiempoEnPantalla((prevTiempo) => prevTiempo + 1);
+            }, 1000);
+
+            return () => {
+                // eslint-disable-next-line no-undef
+                clearInterval(intervalo);
+                console.log(`Tiempo en pantalla: ${tiempoEnPantalla} segundos`);
+            };
+        }, [tiempoEnPantalla, resuelto])
+    );
 
     //Volver a pantalla de contenidos
     const handleBack = () => {
+
+        if (resuelto) {
+            setCantidadFallos(0);
+        }
+
         setIsModalOpen(false);
-        router.push(`/${bloqueId}/${subBloqueId}/${contenidoTematicoId}/listaEjercicios`);
+        router.replace(`/${bloqueId}/${subBloqueId}/${contenidoTematicoId}/listaEjercicios`);
     };
 
     //Gestionar opciones de respuesta
-    const handlePress = (opcionSeleccionada) => {
-        if (opcionSeleccionada === ejercicio.opciones[ejercicio.posicionOpcionCorrecta]) {
+    const handlePress = async (opcionSeleccionada) => {
+        if (opcionSeleccionada === ejercicio.options[ejercicio.correctOptionPosition]) {
+            setResuelto(true);
             setIsModalOpen(true);
             playCorrectSound();
+
+            //Se construye el objeto que se va a enviar en la petición
+            const data = {
+                studentId: estudianteId,
+                exerciseId: ejercicioId,
+                numberOfAttempts: cantidadFallos,
+                solved: true,
+                resolutionTime: tiempoEnPantalla*1000
+            };
+
+            try {
+                const response = await axios.post(`${API_URL}/exercises/solve`, data);
+                console.log('Se ha enviado el ejercicio correctamente: ', response.data)
+            } catch (error) {
+                console.error('Error al enviar los datos: ', error);
+            }
 
         } else {
             temblar();
             playErrorSound();
+            setCantidadFallos(cantidadFallos + 1);
         }
     }
 
@@ -111,9 +201,18 @@ export default function Ejercicio(){
     return(
         <Fondo color={colors.celeste}>
             <Header
-                nombrePagina={"Ejercicio"}
+                nombrePagina={ejercicio.title}
                 onPress={handleBack}
             />
+            {resuelto ? 
+                <Image
+                source={medalla}
+                style={styles.medalla}
+                />
+                :
+                null
+            }
+
             <Modal animationType="fade" visible={isModalOpen} transparent>
                 <View style={styles.modal}>
                     <View style={styles.modalCard}>
@@ -134,26 +233,38 @@ export default function Ejercicio(){
             <View style={styles.enunciadoWrapper}>
                 <ScrollView contentContainerStyle={styles.scrollContenido}>
                     <Text style={styles.texto}>
-                        {ejercicio.enunciado}
+                        {ejercicio.statement}
                     </Text>
                 </ScrollView>
             </View>
             <View style={styles.imagenContainer}>
                 <Image 
-                    source={imagenEnunciadoEjemplo} 
+                    source={{
+                        uri: ejercicio.attachedImageBase64
+                        ? `data:image/jpeg;base64, ${ejercicio.attachedImageBase64}`
+                        : `data:image/png;base64, ${ejercicio.attachedImageBase64}`
+                    }} 
                     style={styles.imagen}
                     resizeMode="contain"
                 />
             </View>
-            <Animated.ScrollView style={[{ transform: [{ translateX: shakeAnimation }]} ]}>
-                {ejercicio.opciones.map((opcion, index) => (
-                    <BotonS
-                        key={index}
-                        titulo={opcion}
-                        onPress={() => handlePress(opcion)}
-                        reproducirSonido={false}
-                    />
-                ))}
+            <Animated.ScrollView style={[{ transform: [{ translateX: shakeAnimation }] }]}>
+            {ejercicio.options && Array.isArray(ejercicio.options) ? (
+                ejercicio.options.map((opcion, index) => (
+                <BotonS
+                    key={index}
+                    titulo={opcion}
+                    onPress={() => handlePress(opcion)}
+                    reproducirSonido={false}
+                    habilitado={!resuelto} //El botón se deshabilita si el ejercicio está resuelto
+                    colorFondo={resuelto && opcion === opcionCorrecta ? colors.verde : undefined}
+                />
+                ))
+            ) : (
+                <Fondo color={colors.celeste}>
+                    <ActivityIndicator size="large" color={colors.blanco} style={{flex: 1}}/>
+                </Fondo>
+            )}
             </Animated.ScrollView>
         </Fondo>
     )
@@ -211,5 +322,13 @@ const styles = StyleSheet.create({
     textoModal: {
         fontSize: 32,
         fontFamily: 'Inter_700Bold',
+    },
+    medalla: {
+        position: 'absolute',
+        zIndex: 1,
+        height: 60,
+        width: 60,
+        top: Constants.statusBarHeight + 10,
+        right: 10
     }
 })

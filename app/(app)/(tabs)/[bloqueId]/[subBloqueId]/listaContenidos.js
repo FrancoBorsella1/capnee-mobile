@@ -11,9 +11,6 @@ import Constants from 'expo-constants';
 
 const API_URL = 'http://149.50.140.55:8082';
 
-//HARDCODEADO POR AHORA
-let courseId = 1;
-
 export default function Contenidos() {
     const [nombreSubBloque, setNombreSubBloque] = useState("");
     const [contenidos, setContenidos] = useState([]);

@@ -31,13 +31,14 @@ export default function Ejercicios() {
         try {
             const token = await getToken();
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            const response = await axios.get(`${API_URL}/exercises/get-all-by-course-id-and-thematic-content-id?courseId=${cursoId}&thematicContentId=${contenidoTematicoId}`, {
+            const response = await axios.get(`${API_URL}/exercises-students/get-all-by-course-id-and-thematic-content-id?courseId=${cursoId}&thematicContentId=${contenidoTematicoId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
+            console.log('ejercicios: ', response.data)
             setNombreContenido(response.data.thematicContent);
-            setEjercicios(response.data.exercises);
+            setEjercicios(response.data.exerciseForStudents);
         } catch (e) {
             console.error('Error al obtener Ejercicios: ', e);
             setError('Error al obtener los Ejercicios.');
@@ -68,8 +69,11 @@ export default function Ejercicios() {
     }
 
     //Navegar hacia un ejercicio en particular
-    const handleExercisePress = (ejercicioId) => {
-        router.push(`/${bloqueId}/${subBloqueId}/${contenidoTematicoId}/${ejercicioId}/ejercicio`)
+    const handleExercisePress = (ejercicioId, isResolved) => {
+        router.push({
+            pathname: `/${bloqueId}/${subBloqueId}/${contenidoTematicoId}/${ejercicioId}/ejercicio`,
+            params: { isResolved }
+        })
     };
 
     //Volver a pantalla de contenidos
@@ -93,7 +97,8 @@ export default function Ejercicios() {
                             key={ejercicio.id}
                             titulo={ejercicio.title}
                             tamanoFuente={30}
-                            onPress={() => handleExercisePress(ejercicio.id)}
+                            onPress={() => handleExercisePress(ejercicio.id, ejercicio.isResolved)}
+                            resuelto={ejercicio.isResolved}
                         />
                     ))}
                 </ScrollView>
