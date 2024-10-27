@@ -10,6 +10,7 @@ import { Inter_700Bold, Inter_400Regular, useFonts } from "@expo-google-fonts/in
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useReducer } from "react";
 import { AuthContextProvider, useAuth } from "./context/AuthContext";
+import { RootSiblingParent } from 'react-native-root-siblings';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,11 +35,13 @@ const MainLayout = () => {
         }
     }, [isAuthenticated, segments, router])
 
-    return (   
-        <View style={{flex: 1}}>
-            <StatusBar style="auto"/>
-            <Slot />
-        </View>
+    return (
+        <RootSiblingParent>
+            <View style={{flex: 1}}>
+                <StatusBar style="auto"/>
+                <Slot />
+            </View>
+        </RootSiblingParent>
     );
 }
 
