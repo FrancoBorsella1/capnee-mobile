@@ -4,6 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 // Para almacenar token en Web, ya que secure store no es soportado por la web
 import { Platform } from 'react-native';
 import { useRouter } from "expo-router";
+import { jwtDecode } from "jwt-decode";
 
 export const AuthContext = createContext();
 
@@ -11,6 +12,7 @@ export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
     const [cursoId, setCursoId] = useState(null);
+    const [estudianteId, setEstudianteId] = useState(null);
     const API_URL = 'http://149.50.140.55:8081';
     const router = useRouter();
 
@@ -20,6 +22,10 @@ export const AuthContextProvider = ({ children }) => {
             if (token) {
                 setIsAuthenticated(true);
                 console.log('Token encontrado, autenticado');
+
+                const decodedToken = jwtDecode(token);
+                setEstudianteId(decodedToken.sub);
+                
             } else {
                 setIsAuthenticated(false);
                 console.log('No se encontró token, no autenticado');
@@ -62,6 +68,7 @@ export const AuthContextProvider = ({ children }) => {
             const response = await axios.post(`${API_URL}/auth/user-password`, {user, password});
             if (response.data) {
                 const accessToken = response.data.accessToken;
+                const decodedToken = jwtDecode(accessToken);
 
                 if (Platform.OS === 'web') {
                     window.localStorage.setItem('token-jwt', accessToken);
@@ -69,6 +76,7 @@ export const AuthContextProvider = ({ children }) => {
                     await SecureStore.setItemAsync('token-jwt', accessToken);
                 }
 
+                setEstudianteId(decodedToken.sub);
                 setUser({ user });
                 setIsAuthenticated(true);
 
@@ -95,9 +103,11 @@ export const AuthContextProvider = ({ children }) => {
                 await SecureStore.deleteItemAsync('token-jwt');
             }
 
+            //Se limpian todos los estados
             setUser(null);
             setIsAuthenticated(false);
             setCursoId(null);
+            setEstudianteId(null);
             console.log('Cierre de sesión exitoso');
         }catch(error){
             if (error.response) {
@@ -113,7 +123,7 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{user, isAuthenticated, login, logout, getToken, cursoId, setCursoId }}>
+        <AuthContext.Provider value={{user, isAuthenticated, login, logout, getToken, cursoId, setCursoId, estudianteId }}>
             {children}
         </AuthContext.Provider>
     )
