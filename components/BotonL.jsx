@@ -1,6 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import colors from "../constants/colors";
-import { Lock } from "./Icons";
+import { Lock, Check } from "./Icons";
 import React, { useState } from "react";
 import { Audio } from "expo-av";
 
@@ -29,7 +29,8 @@ export default function BotonL({
     colorFondo = colors.violeta,
     tamanoFuente = 26,
     onPress,
-    habilitado = true //El botón está habilitado por defecto. Cuando habilitado = false, el botón no puede utilizarse
+    habilitado = true, //El botón está habilitado por defecto. Cuando habilitado = false, el botón no puede utilizarse
+    resuelto = false, //Si es un ejercicio, el botón está marcado como "no resuelto" por defecto. Cuando el ejercicio se resuelve, cambia el estilo del botón
 }) {
     // Variables de estado de sonido
     const [sound, setSound] = useState();
@@ -77,11 +78,13 @@ export default function BotonL({
                     backgroundColor: pressed ? colorFondoOscuro : colorFondo,
                 },
                 !habilitado && styles.botonDeshabilitado,
+                resuelto && styles.botonResuelto,
                 styles.boton
             ]}
             disabled={!habilitado} //El botón no se puede presionar si está deshabilitado
         >
-            {!habilitado && <Lock style={styles.lock}/>}
+            {!habilitado && <Lock style={styles.icon}/>}
+            {resuelto && <Check style={styles.icon}/>}
             <View style={styles.conteiner}>
                 <Text style={[styles.texto, {fontSize: tamanoFuente}]}>
                     {titulo}
@@ -123,10 +126,13 @@ const styles = StyleSheet.create({
         color: colors.blanco,
         textAlign: 'center',
     },
-    lock: {
+    icon: {
         position: 'absolute',
         top: 10,
         right: 10
+    },
+    botonResuelto: {
+        backgroundColor: colors.verde,
     }
 }
 )
