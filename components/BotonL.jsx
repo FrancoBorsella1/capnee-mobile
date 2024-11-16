@@ -34,6 +34,7 @@ export default function BotonL({
     resuelto = false, //Si es un ejercicio, el botón está marcado como "no resuelto" por defecto. Cuando el ejercicio se resuelve, cambia el estilo del botón
     focused,
     index,
+    buttonRef
 }) {
     // Variables de estado de sonido
     const [sound, setSound] = useState();
@@ -90,6 +91,7 @@ export default function BotonL({
                 focused ? styles.focused : null,
             ]}
             disabled={!habilitado} //El botón no se puede presionar si está deshabilitado
+            ref={buttonRef}
         >
             {!habilitado && <Lock style={styles.icon}/>}
             {resuelto && <Check style={styles.icon}/>}

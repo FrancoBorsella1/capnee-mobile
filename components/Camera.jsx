@@ -72,7 +72,6 @@ export default function CameraBackground() {
     return <Text>Acceso a la camara denegado</Text>;
   }
 
-
   return (
     <Camera
       type={Camera.Constants.Type.front}
@@ -81,7 +80,7 @@ export default function CameraBackground() {
         mode: FaceDetector.FaceDetectorMode.accurate,
         detectLandmarks: FaceDetector.FaceDetectorLandmarks.none,
         runClassifications: FaceDetector.FaceDetectorClassifications.all,
-        minDetectionInterval: 800,
+        minDetectionInterval: 500,
         tracking: true,
       }}
       style={{

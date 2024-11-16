@@ -98,23 +98,18 @@ export default function Bloques() {
         setCantidadBotones(bloques.length);
     }, [bloques]);
 
+    // Función para hacer scroll hasta el botón enfocado
     useEffect(() => {
-        if (buttonRefs.current[indiceBotonFocus] && scrollViewRef.current) {
-            //Desplazarse hacia el botón en focus
+        if (scrollViewRef.current && buttonRefs.current[indiceBotonFocus]) {
             buttonRefs.current[indiceBotonFocus].measureLayout(
-                scrollViewRef.current.getScrollableNode(),
+                scrollViewRef.current,
                 (x, y) => {
-                    scrollViewRef.current.scrollTo({
-                        x: 0,
-                        y: y - 50,
-                        animated: true,
-                    });
-                },
-                (error) => console.error("Error al medir el botón:", error)
+                    scrollViewRef.current.scrollTo({ y: y - 100, animated: true });
+                }
             );
         }
     }, [indiceBotonFocus]);
-    
+ 
     if (loading) {
         return (
             <Fondo color={colors.celeste}>
@@ -142,16 +137,16 @@ export default function Bloques() {
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner} ref={scrollViewRef}>
                 <Image source={mathLogo} style={styles.image}/>
                 <Text style={styles.texto}>¡A resolver!</Text>
-                {bloques.map((bloque) => (
+                {bloques.map((bloque, index) => (
                     <BotonL
                         key={bloque.id}
                         titulo={bloque.name}
                         tamanoFuente={36}
                         habilitado={bloque.isEnabled}
-                        index={bloque.id}
-                        focused={indiceBotonFocus === bloque.id}
+                        index={index}
+                        focused={indiceBotonFocus === index}
                         onPress={() => handleBlockPress(bloque.id)}
-                        ref={(ref) => (buttonRefs.current[bloque.id] = ref)}
+                        buttonRef={(ref) => buttonRefs.current[index] = ref}
                     />
                 ))}
             </ScrollView>
