@@ -3,6 +3,7 @@ import colors from "../constants/colors";
 import { Lock, Check } from "./Icons";
 import React, { useState } from "react";
 import { Audio } from "expo-av";
+import { useGestos } from "../app/context/GestosContext";
 
 // Función para oscurecer cualquier color
 const darkenColor = (color, factor = 0.2) => {
@@ -31,6 +32,8 @@ export default function BotonL({
     onPress,
     habilitado = true, //El botón está habilitado por defecto. Cuando habilitado = false, el botón no puede utilizarse
     resuelto = false, //Si es un ejercicio, el botón está marcado como "no resuelto" por defecto. Cuando el ejercicio se resuelve, cambia el estilo del botón
+    focused,
+    index,
 }) {
     // Variables de estado de sonido
     const [sound, setSound] = useState();
@@ -69,6 +72,10 @@ export default function BotonL({
         }
     };
 
+    //Manejar el enfoque del botón
+    const { indiceBotonFocus } = useGestos();
+
+    const isFocused = indiceBotonFocus === index;
 
     return (
         <Pressable
@@ -79,7 +86,8 @@ export default function BotonL({
                 },
                 !habilitado && styles.botonDeshabilitado,
                 resuelto && styles.botonResuelto,
-                styles.boton
+                styles.boton,
+                focused ? styles.focused : null,
             ]}
             disabled={!habilitado} //El botón no se puede presionar si está deshabilitado
         >
@@ -133,6 +141,11 @@ const styles = StyleSheet.create({
     },
     botonResuelto: {
         backgroundColor: colors.verde,
-    }
+    },
+    focused: {
+        borderWidth: 8,
+        borderColor: colors.blanco,
+        borderStyle: 'dashed'
+    },
 }
 )

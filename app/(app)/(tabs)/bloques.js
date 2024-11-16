@@ -3,10 +3,11 @@ import BotonL from "../../../components/BotonL";
 import colors from "../../../constants/colors";
 import { Text, Image, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
-import { jwtDecode } from "jwt-decode";
+import { useGestos } from "../../context/GestosContext";
+// import { jwtDecode } from "jwt-decode";
 
 const mathLogo = require('../../../assets/math_symbols.png');
 const API_URL_USER = 'http://149.50.140.55:8081';
@@ -20,7 +21,14 @@ export default function Bloques() {
     const router = useRouter();
 
     //Recuperar token y estado de autenticación del AuthContext
-    const { getToken, isAuthenticated, setCursoId, cursoId } = useAuth();
+    const { getToken, isAuthenticated, getPayloadFromJWT, setCursoId, cursoId } = useAuth();
+
+    //Recuperar indice de botones
+    const { indiceBotonFocus, setCantidadBotones } = useGestos();
+
+    //Referencia para el autoscroll de la pantalla
+    const scrollViewRef = useRef(null);
+    const buttonRefs = useRef([]);
 
     const getBloques = async () => {
         try {
@@ -51,7 +59,7 @@ export default function Bloques() {
             };
 
             //Decodificar token
-            const decoded = jwtDecode(token);
+            const decoded = getPayloadFromJWT(token);
 
             if (!decoded) {
                 throw new Error("El token no es válido");
@@ -84,9 +92,29 @@ export default function Bloques() {
         };
     
         fetchCourseAndBlocks();
-    }, [isAuthenticated, cursoId]);  
-    
+    }, [isAuthenticated, cursoId]);
 
+    useEffect(() => {
+        setCantidadBotones(bloques.length);
+    }, [bloques]);
+
+    useEffect(() => {
+        if (buttonRefs.current[indiceBotonFocus] && scrollViewRef.current) {
+            //Desplazarse hacia el botón en focus
+            buttonRefs.current[indiceBotonFocus].measureLayout(
+                scrollViewRef.current.getScrollableNode(),
+                (x, y) => {
+                    scrollViewRef.current.scrollTo({
+                        x: 0,
+                        y: y - 50,
+                        animated: true,
+                    });
+                },
+                (error) => console.error("Error al medir el botón:", error)
+            );
+        }
+    }, [indiceBotonFocus]);
+    
     if (loading) {
         return (
             <Fondo color={colors.celeste}>
@@ -111,7 +139,7 @@ export default function Bloques() {
 
     return (
         <Fondo color={colors.celeste}>
-            <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner}>
+            <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner} ref={scrollViewRef}>
                 <Image source={mathLogo} style={styles.image}/>
                 <Text style={styles.texto}>¡A resolver!</Text>
                 {bloques.map((bloque) => (
@@ -120,7 +148,10 @@ export default function Bloques() {
                         titulo={bloque.name}
                         tamanoFuente={36}
                         habilitado={bloque.isEnabled}
+                        index={bloque.id}
+                        focused={indiceBotonFocus === bloque.id}
                         onPress={() => handleBlockPress(bloque.id)}
+                        ref={(ref) => (buttonRefs.current[bloque.id] = ref)}
                     />
                 ))}
             </ScrollView>

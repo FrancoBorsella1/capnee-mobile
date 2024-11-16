@@ -5,14 +5,14 @@ import { useRouter } from "expo-router";
 import BotonL from "../../../components/BotonL";
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { jwtDecode } from "jwt-decode";
+// import { jwtDecode } from "jwt-decode";
 
 const logo = require('../../../assets/calculator.png');
 
 export default function Index() {
     const [user, setUser] = useState({});
     const router = useRouter();
-    const { getToken } = useAuth();
+    const { getToken, getPayloadFromJWT } = useAuth();
     const [decodedToken, setDecodedToken] = useState(null);
 
     //Referencia a la animación de pulsación
@@ -46,7 +46,7 @@ export default function Index() {
              const token = await getToken();
 
              if (token) {
-                const decoded = jwtDecode(token);
+                const decoded = getPayloadFromJWT(token);
                 console.log(decoded);
                 setDecodedToken(decoded);
              }

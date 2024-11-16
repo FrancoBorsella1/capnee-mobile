@@ -31,7 +31,8 @@ export default function BotonS({
     onPress,
     reproducirSonido = true,
     resuelto = false,
-    habilitado = true
+    habilitado = true,
+    focused
 }) {
     // Variables de estado de sonido
     const [sound, setSound] = useState();
@@ -80,7 +81,8 @@ export default function BotonS({
                     backgroundColor: pressed ? colorFondoOscuro : colorFondo,
                 },
                 resuelto && styles.botonResuelto,
-                styles.boton
+                styles.boton,
+                focused ? styles.focused : styles.unfocused,
             ]}
             disabled={!habilitado}
         >
@@ -130,6 +132,11 @@ const styles = StyleSheet.create({
     },
     botonResuelto: {
         backgroundColor: colors.verde,
-    }
+    },
+    focused: {
+        borderWidth: 8,
+        borderColor: colors.blanco,
+        borderStyle: 'dashed'
+    },
 }
 )

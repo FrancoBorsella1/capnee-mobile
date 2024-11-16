@@ -4,6 +4,9 @@ import { View } from "react-native";
 import { Slot, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
+//Cámara para detección de gestos
+import CameraBackground from "../components/Camera";
+
 //Importaciones para fuentes
 
 import { Inter_700Bold, Inter_400Regular, useFonts } from "@expo-google-fonts/inter";
@@ -11,6 +14,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useReducer } from "react";
 import { AuthContextProvider, useAuth } from "./context/AuthContext";
 import { RootSiblingParent } from 'react-native-root-siblings';
+import { GestosContextProvider } from "./context/GestosContext";
+import { useGestos } from "./context/GestosContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -18,6 +23,7 @@ const MainLayout = () => {
     const {isAuthenticated} = useAuth();
     const segments = useSegments();
     const router = useRouter();
+    const { navegacionActivada } = useGestos();
 
     useEffect(() => {
         //Checkea si el usuario está autenticado o no
@@ -37,10 +43,12 @@ const MainLayout = () => {
 
     return (
         <RootSiblingParent>
-            <View style={{flex: 1}}>
-                <StatusBar style="auto"/>
-                <Slot />
-            </View>
+                <View style={{flex: 1}}>
+                    <StatusBar style="auto"/>
+                    { navegacionActivada ? <CameraBackground/> : <View/>}
+                    {/* <CameraBackground/> */}
+                    <Slot />
+                </View>
         </RootSiblingParent>
     );
 }
@@ -65,8 +73,10 @@ export default function Root() {
     }
 
     return (
-        <AuthContextProvider>
-            <MainLayout />
-        </AuthContextProvider>
+        <GestosContextProvider>
+            <AuthContextProvider>
+                <MainLayout />
+            </AuthContextProvider>
+        </GestosContextProvider>
     );
 }

@@ -4,7 +4,9 @@ import * as SecureStore from 'expo-secure-store';
 // Para almacenar token en Web, ya que secure store no es soportado por la web
 import { Platform } from 'react-native';
 import { useRouter } from "expo-router";
-import { jwtDecode } from "jwt-decode";
+// import { jwtDecode } from "jwt-decode";
+import { decode as base64Decode } from "base-64";
+import { useGestos } from "./GestosContext";
 
 export const AuthContext = createContext();
 
@@ -16,6 +18,8 @@ export const AuthContextProvider = ({ children }) => {
     const API_URL = 'http://149.50.140.55:8081';
     const router = useRouter();
 
+    // const { setNavegacionActivada } = useGestos();
+
     useEffect(() => {
         const loadUser = async () => {
             const token = await getToken();
@@ -23,7 +27,7 @@ export const AuthContextProvider = ({ children }) => {
                 setIsAuthenticated(true);
                 console.log('Token encontrado, autenticado');
 
-                const decodedToken = jwtDecode(token);
+                const decodedToken = getPayloadFromJWT(token);
                 setEstudianteId(decodedToken.sub);
                 
             } else {
@@ -62,14 +66,31 @@ export const AuthContextProvider = ({ children }) => {
         }
     };
 
+    //Decodificar token
+    function getPayloadFromJWT(token) {
+        try {
+          // Separa el token en sus tres partes (header, payload, signature)
+          const payloadBase64 = token.split('.')[1];
+          // Decodifica el payload de Base64 a una cadena
+          const decodedPayload = base64Decode(payloadBase64);
+          // Convierte la cadena JSON a un objeto JavaScript
+          return JSON.parse(decodedPayload);
+        } catch (error) {
+          console.error("Error al decodificar el payload del token:", error);
+          return null;
+        }
+      }
+
     //Login
     const login = async (user, password) => {
         try{
             const response = await axios.post(`${API_URL}/auth/user-password`, {user, password});
             if (response.data) {
                 const accessToken = response.data.accessToken;
-                const decodedToken = jwtDecode(accessToken);
-
+                console.log('Token: ', accessToken);
+                const decodedToken = getPayloadFromJWT(accessToken);
+                
+                console.log('Token decodificado: ', decodedToken);
                 if (Platform.OS === 'web') {
                     window.localStorage.setItem('token-jwt', accessToken);
                 } else {
@@ -108,6 +129,8 @@ export const AuthContextProvider = ({ children }) => {
             setIsAuthenticated(false);
             setCursoId(null);
             setEstudianteId(null);
+            // setNavegacionActivada(false);
+
             console.log('Cierre de sesión exitoso');
         }catch(error){
             if (error.response) {
@@ -123,7 +146,7 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{user, isAuthenticated, login, logout, getToken, cursoId, setCursoId, estudianteId }}>
+        <AuthContext.Provider value={{user, isAuthenticated, login, logout, getToken, getPayloadFromJWT, cursoId, setCursoId, estudianteId }}>
             {children}
         </AuthContext.Provider>
     )

@@ -1,11 +1,12 @@
 import Fondo from "../components/Fondo";
 import Header from "../components/Header";
 import colors from "../constants/colors";
-import { Text, View, Image, StyleSheet } from "react-native";
+import { Text, View, Image, StyleSheet, Button } from "react-native";
 import { useRouter } from "expo-router";
+// import { Camera } from "expo-camera";
+// import CameraBackground from "../components/Camera";
 
-const logo = require('../assets/logo_capnee.png')
-
+const logo = require('../assets/logo_capnee.png');
 
 export default function LoginFacial() {
     const router = useRouter();
@@ -23,11 +24,14 @@ export default function LoginFacial() {
             <Image source={logo} style={styles.image}/>
             <Text style={styles.texto}>Coloca tu cara dentro de la figura</Text>
             <View style={styles.conteiner}>
-                <View style={styles.cameraContainer}></View>
+                <View style={styles.cameraContainer}>
+                    {/* <CameraBackground/> */}
+                </View>
             </View>
         </Fondo>
     );
 }
+
 
 const styles = StyleSheet.create({
     conteiner: {
@@ -52,9 +56,13 @@ const styles = StyleSheet.create({
     cameraContainer: {
         height: 580,
         width: 320,
-        backgroundColor: '#000',
+        backgroundColor: 'black',
         borderRadius: 100,
         overflow: 'hidden',
         margin: 'auto'
+    },
+    camera: {
+        flex: 1,
+        zIndex: -1
     }
 })

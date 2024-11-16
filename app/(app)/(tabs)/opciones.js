@@ -6,17 +6,18 @@ import { Text, View, StyleSheet } from "react-native";
 import { Camera, Eye, Smiley } from "../../../components/Icons";
 import { useState } from "react";
 import { useRouter } from "expo-router";
+import { GestosContext, useGestos } from "../../context/GestosContext";
 
 export default function Opciones() {
     //Estados para manejar el cambio de color y texto del botón cuando se activa y desactiva
-    const [navegacionActivada, setNavegacionActivada] = useState(false);
+    const { navegacionActivada, toggleNavegacion } = useGestos();
 
     const handleActivarNavegacion = () => {
         if (navegacionActivada) {
-            setNavegacionActivada(false);
+            toggleNavegacion(false);
             return;
         } else {
-            setNavegacionActivada(true);
+            toggleNavegacion(true);
         }
     }
 

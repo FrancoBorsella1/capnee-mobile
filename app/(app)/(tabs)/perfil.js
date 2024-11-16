@@ -6,13 +6,13 @@ import { Gear, Close } from "../../../components/Icons";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { jwtDecode } from "jwt-decode";
+// import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 
 const API_URL = 'http://149.50.140.55:8081';
 
 export default function Perfil() {
-    const { logout } = useAuth();
+    const { logout, getPayloadFromJWT } = useAuth();
     const router = useRouter();
     const { getToken } = useAuth();
     const [decodedToken, setDecodedToken] = useState(null);
@@ -29,7 +29,7 @@ export default function Perfil() {
                 };
 
                 //Decodificar token
-                const decoded = jwtDecode(token);
+                const decoded = getPayloadFromJWT(token);
                 setDecodedToken(decoded);
                 console.log("Decodificado: ", decoded);
 
