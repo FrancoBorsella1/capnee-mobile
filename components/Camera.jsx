@@ -69,7 +69,7 @@ export default function CameraBackground() {
   };
 
   if (hasPermission === false) {
-    return <Text>Acceso a la camara denegado</Text>;
+    return console.log('Acceso a la camara denegado');
   }
 
   return (
@@ -80,7 +80,7 @@ export default function CameraBackground() {
         mode: FaceDetector.FaceDetectorMode.accurate,
         detectLandmarks: FaceDetector.FaceDetectorLandmarks.none,
         runClassifications: FaceDetector.FaceDetectorClassifications.all,
-        minDetectionInterval: 500,
+        minDetectionInterval: 400,
         tracking: true,
       }}
       style={{

@@ -74,7 +74,7 @@ export default function BotonL({
     };
 
     //Manejar el enfoque del botón
-    const { indiceBotonFocus } = useGestos();
+    const { indiceBotonFocus, navegacionActivada } = useGestos();
 
     const isFocused = indiceBotonFocus === index;
 
@@ -88,7 +88,7 @@ export default function BotonL({
                 !habilitado && styles.botonDeshabilitado,
                 resuelto && styles.botonResuelto,
                 styles.boton,
-                focused ? styles.focused : null,
+                navegacionActivada && focused ? styles.focused : null,
             ]}
             disabled={!habilitado} //El botón no se puede presionar si está deshabilitado
             ref={buttonRef}
