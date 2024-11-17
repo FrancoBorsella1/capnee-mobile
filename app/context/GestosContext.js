@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useRef } from "react";
 
 export const GestosContext = createContext();
 
@@ -6,9 +6,20 @@ export const GestosContextProvider = ({ children }) => {
     const [navegacionActivada, setNavegacionActivada] = useState(false);
     const [indiceBotonFocus, setIndiceBotonFocus] = useState(0);
     const [cantidadBotones, setCantidadBotones] = useState(0);
+    const buttonActionsRef = useRef({})
     
     const toggleNavegacion = (valor) => {
         setNavegacionActivada(valor);
+    };
+
+    // Registrar la función de presión de un botón
+    const registerButtonAction = (index, action) => {
+        buttonActionsRef.current[index] = action;
+    };
+
+    // Eliminar la función de presión de un botón
+    const unregisterButtonAction = (index) => {
+        delete buttonActionsRef.current[index];
     };
 
     const handleGestos = (gestoDetectado) => {
@@ -24,12 +35,11 @@ export const GestosContextProvider = ({ children }) => {
         } 
         else if (gestoDetectado === "smile" && cantidadBotones > 0) {
             console.log("Estás sonriendo!");
-            presionarBoton(indiceBotonFocus);
+            const action = buttonActionsRef.current[indiceBotonFocus];
+            if (action) {
+                action();
+            }
         }
-    };
-
-    const presionarBoton = (index) => {
-        console.log(`Ejecutando acción del botón ${index + 1}`);
     };
 
     return (
@@ -39,6 +49,8 @@ export const GestosContextProvider = ({ children }) => {
             handleGestos,
             indiceBotonFocus,
             setCantidadBotones,
+            registerButtonAction,
+            unregisterButtonAction
         }}>
             {children}
         </GestosContext.Provider>

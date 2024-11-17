@@ -61,7 +61,7 @@ export default function CameraBackground() {
 
     const isRightEyeClosed = leftEyeOpenProbability < 0.1;
     const isLeftEyeClosed = rightEyeOpenProbability < 0.1;
-    const isSmiling = smilingProbability > 0.7;
+    const isSmiling = smilingProbability > 0.8;
 
     // Detección de gestos más precisa
     if (isRightEyeClosed && !isLeftEyeClosed) {

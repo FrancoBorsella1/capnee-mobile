@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import colors from "../constants/colors";
 import { Lock, Check } from "./Icons";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Audio } from "expo-av";
 import { useGestos } from "../app/context/GestosContext";
 
@@ -73,8 +73,22 @@ export default function BotonL({
         }
     };
 
+    // Registrar la acción del botón cuando se monta
+    useEffect(() => {
+        if (habilitado && onPress) {
+            const buttonAction = () => {
+                playSound();
+                onPress();
+            };
+            registerButtonAction(index, buttonAction);
+            
+            // Limpiar cuando el componente se desmonte
+            return () => unregisterButtonAction(index);
+        }
+    }, [index, habilitado, onPress]);
+
     //Manejar el enfoque del botón
-    const { indiceBotonFocus, navegacionActivada } = useGestos();
+    const { indiceBotonFocus, navegacionActivada, registerButtonAction, unregisterButtonAction } = useGestos();
 
     const isFocused = indiceBotonFocus === index;
 
