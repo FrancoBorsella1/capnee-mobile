@@ -22,10 +22,10 @@ export const GestosContextProvider = ({ children }) => {
             console.log("Estás guiñando el ojo izquierdo!");
             setIndiceBotonFocus((prevIndex) => (prevIndex - 1 + cantidadBotones) % cantidadBotones);
         } 
-        // else if (gestoDetectado === "smile" && cantidadBotones > 0) {
-        //     console.log("Estás sonriendo!");
-        //     presionarBoton(indiceBotonFocus);
-        // }
+        else if (gestoDetectado === "smile" && cantidadBotones > 0) {
+            console.log("Estás sonriendo!");
+            presionarBoton(indiceBotonFocus);
+        }
     };
 
     const presionarBoton = (index) => {

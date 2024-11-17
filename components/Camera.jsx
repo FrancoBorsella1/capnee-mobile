@@ -1,75 +1,86 @@
-import React, { useState, useEffect } from "react";
-import { StyleSheet, Text } from "react-native";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { StyleSheet, Text, View, AppState } from "react-native";
 import { Camera } from "expo-camera";
 import * as FaceDetector from "expo-face-detector";
 import { useGestos } from "../app/context/GestosContext";
-// import { useCameraContext } from "./CameraContext";
 
 export default function CameraBackground() {
-  const [hasPermission, setHasPermission] = useState(false);
-  // const [faceData, setFaceData] = useState([]);
-  // const { setIsLeftEyeOpen } = useCameraContext();
-  // const { setIsRightEyeOpen } = useCameraContext(); // cambio
-  const { handleGestos } = useGestos();
+  const [hasPermission, setHasPermission] = useState(null);
+  const [isActive, setIsActive] = useState(true);
+  const { handleGestos, navegacionActivada } = useGestos();
+  const lastGestureTime = useRef(Date.now());
+  const GESTURE_COOLDOWN = 500;
 
+  // Manejo de permisos de cámara
   useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === "granted");
-    })();
-  }, []);
-  
-
-  // Solo se ejecuta cuando se renderiza
-
-  // useEffect(() => {
-  //   if (faceData.length > 0) {
-  //     const firstFace = faceData[0];
-  //     const ojoDerechoAbierto =
-  //       firstFace.leftEyeOpenProbability > 0.9 &&
-  //       firstFace.rightEyeOpenProbability < 0.1;
-  //     const ojoIzquierdoAbierto =
-  //       firstFace.rightEyeOpenProbability > 0.9 &&
-  //       firstFace.leftEyeOpenProbability < 0.1;
-  //     const sonrisa = firstFace.smilingProbability > 0.7;
-  //   //   setIsLeftEyeOpen(ojoIzquierdoAbierto);
-  //   //   setIsRightEyeOpen(ojoDerechoAbierto);
-      
-  //   } else {
-  //   //   setIsLeftEyeOpen(false);
-  //   //   setIsRightEyeOpen(false);
-  //   }
-  // }, [faceData]);
-
-  const handleFacesDetected = ({ faces }) => {
-    console.log(faces);
-
-    if (faces.length > 0) {
-      const lastFace = faces[faces.length - 1];
-  
-      const ojoIzquierdoAbierto =
-        lastFace.leftEyeOpenProbability > 0.7 &&
-        lastFace.rightEyeOpenProbability < 0.1;
-      const ojoDerechoAbierto =
-        lastFace.rightEyeOpenProbability > 0.7 &&
-        lastFace.leftEyeOpenProbability < 0.1;
-      const sonrisa = lastFace.smilingProbability > 0.7;
-  
-      if (ojoDerechoAbierto) {
-        console.log("Última cara: Guiño derecho detectado");
-        handleGestos("rightWink"); // Guiño con el ojo derecho
-      } else if (ojoIzquierdoAbierto) {
-        console.log("Última cara: Guiño izquierdo detectado");
-        handleGestos("leftWink"); // Guiño con el ojo izquierdo
-      } else if (sonrisa) {
-        console.log("Última cara: Sonrisa detectada");
-        handleGestos("smile"); // Sonrisa
+    const requestPermissions = async () => {
+      try {
+        const { status } = await Camera.requestCameraPermissionsAsync();
+        setHasPermission(status === "granted");
+      } catch (error) {
+        console.error("Error al solicitar permisos de cámara:", error);
+        setHasPermission(false);
       }
+    };
+
+    requestPermissions();
+  }, []);
+
+  // Manejo del estado de la aplicación (activo/inactivo)
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", nextAppState => {
+      setIsActive(nextAppState === "active");
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  const handleFacesDetected = useCallback(({ faces }) => {
+    if (!navegacionActivada || !isActive || faces.length === 0) return;
+
+    const currentTime = Date.now();
+    if (currentTime - lastGestureTime.current < GESTURE_COOLDOWN) return;
+
+    const face = faces[0]; // Usar la primera cara detectada
+    const gestureDetected = detectGesture(face);
+    
+    if (gestureDetected) {
+      lastGestureTime.current = currentTime;
+      handleGestos(gestureDetected);
     }
+  }, [navegacionActivada, isActive, handleGestos]);
+
+  const detectGesture = (face) => {
+    const {
+      leftEyeOpenProbability,
+      rightEyeOpenProbability,
+      smilingProbability
+    } = face;
+
+    const isRightEyeClosed = leftEyeOpenProbability < 0.1;
+    const isLeftEyeClosed = rightEyeOpenProbability < 0.1;
+    const isSmiling = smilingProbability > 0.7;
+
+    // Detección de gestos más precisa
+    if (isRightEyeClosed && !isLeftEyeClosed) {
+      return "rightWink";
+    } else if (isLeftEyeClosed && !isRightEyeClosed) {
+      return "leftWink";
+    } else if (isSmiling) {
+      return "smile";
+    }
+
+    return null;
   };
 
+  if (hasPermission === null) {
+    return <View style={styles.messageContainer}><Text>Solicitando permiso de cámara...</Text></View>;
+  }
+
   if (hasPermission === false) {
-    return console.log('Acceso a la camara denegado');
+    return <View style={styles.messageContainer}><Text>Sin acceso a la cámara</Text></View>;
   }
 
   return (
@@ -77,28 +88,34 @@ export default function CameraBackground() {
       type={Camera.Constants.Type.front}
       onFacesDetected={handleFacesDetected}
       faceDetectorSettings={{
-        mode: FaceDetector.FaceDetectorMode.accurate,
+        mode: FaceDetector.FaceDetectorMode.fast,
         detectLandmarks: FaceDetector.FaceDetectorLandmarks.none,
         runClassifications: FaceDetector.FaceDetectorClassifications.all,
-        minDetectionInterval: 400,
+        minDetectionInterval: 300,
         tracking: true,
       }}
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: 1,
-        height: 1,
-        zIndex: -1,
-      }}
+      style={styles.camera}
     />
   );
 }
 
 const styles = StyleSheet.create({
   camera: {
-    flex: 1,
-    ...StyleSheet.absoluteFillObject,
-    zIndex: -1, // Coloca la cámara detrás del contenido
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: 1,
+    height: 1,
+    zIndex: -1,
   },
+  messageContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: 1,
+    height: 1,
+    zIndex: -1,
+    justifyContent: "center",
+    alignItems: "center",
+  }
 });
