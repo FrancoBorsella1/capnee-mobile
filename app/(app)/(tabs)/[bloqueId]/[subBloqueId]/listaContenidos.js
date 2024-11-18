@@ -18,15 +18,28 @@ export default function Contenidos() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const router = useRouter();
+
+    const [indiceBotonFocus, setIndiceBotonFocus] = useState(0);
+    const [cantidadBotones, setCantidadBotones] = useState(0);
+    const buttonActionsRef = useRef({})
+
+    //Recuperar indice de botones
+    const { gesture} = useGestos();
+
+    const registerButtonAction = (index, action) => {
+        buttonActionsRef.current[index] = action;
+    };
+
+    // Eliminar la función de presión de un botón
+    const unregisterButtonAction = (index) => {
+        delete buttonActionsRef.current[index];
+    };
     
     //Recuperar id y nombre del sub-bloque al que se accedió
     const { bloqueId, subBloqueId } = useLocalSearchParams();
 
     //Recuperar token y estado de autenticación del AuthContext
     const { getToken, isAuthenticated, cursoId } = useAuth();
-
-    //Recuperar indice de botones
-    const { indiceBotonFocus, setCantidadBotones, cantidadBotones } = useGestos();
 
     //Referencia para el autoscroll de la pantalla
     const scrollViewRef = useRef(null);
@@ -71,16 +84,32 @@ export default function Contenidos() {
     );
 
     // Función para hacer scroll hasta el botón enfocado
-    useEffect(() => {
-        if (scrollViewRef.current && buttonRefs.current[indiceBotonFocus]) {
-            buttonRefs.current[indiceBotonFocus].measureLayout(
-                scrollViewRef.current,
-                (x, y) => {
-                    scrollViewRef.current.scrollTo({ y: y - 100, animated: true });
-                }
-            );
-        }
-    }, [indiceBotonFocus]);
+    useFocusEffect(
+        useCallback(() => {
+            if (gesture !== null) {
+                const interval = setInterval(() => {
+                    if (gesture === "rightWink" && cantidadBotones > 0) {
+                        console.log("Estás guiñando el ojo derecho!");
+                        setIndiceBotonFocus((prevIndex) => (prevIndex + 1) % cantidadBotones);
+                    } else if (gesture === "leftWink" && cantidadBotones > 0) {
+                        console.log("Estás guiñando el ojo izquierdo!");
+                        setIndiceBotonFocus((prevIndex) => (prevIndex - 1 + cantidadBotones) % cantidadBotones);
+                    } else if (gesture === "smile" && cantidadBotones > 0) {
+                        console.log("Estás sonriendo!");
+                        console.log("Indice boton:" + indiceBotonFocus);
+                        console.log(buttonActionsRef.current[indiceBotonFocus]);
+                        const action = buttonActionsRef.current[indiceBotonFocus];
+                        if (action) {
+                            action();
+                        }
+                    }
+                }, 300); // Repite cada 300ms (ajusta según sea necesario)
+    
+                // Limpieza para evitar fugas de memoria
+                return () => clearInterval(interval);
+            }
+        }, [gesture, cantidadBotones, indiceBotonFocus]) // Asegúrate de incluir las dependencias necesarias
+    );
 
     if (loading) {
         return (
@@ -123,7 +152,10 @@ export default function Contenidos() {
                         index={index}
                         focused={indiceBotonFocus === index}
                         onPress={() => handleContentPress(contenido.id)}
-                        buttonRef={(ref) => buttonRefs.current[index] = ref}
+                        buttonRef={(ref) => {
+                            buttonRefs.current[index] = ref;
+                             registerButtonAction(index, () => handleContentPress(contenido.id)); // Registro de acción
+                             }}
                     />
                 ))}
             </ScrollView>

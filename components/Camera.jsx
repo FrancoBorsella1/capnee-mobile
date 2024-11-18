@@ -7,7 +7,7 @@ import { useGestos } from "../app/context/GestosContext";
 export default function CameraBackground() {
   const [hasPermission, setHasPermission] = useState(null);
   const [isActive, setIsActive] = useState(true);
-  const { handleGestos, navegacionActivada } = useGestos();
+  const { handleGestos, navegacionActivada,setGesture,gesture } = useGestos();
   const lastGestureTime = useRef(Date.now());
   const GESTURE_COOLDOWN = 500;
 
@@ -39,17 +39,11 @@ export default function CameraBackground() {
 
   const handleFacesDetected = useCallback(({ faces }) => {
     if (!navegacionActivada || !isActive || faces.length === 0) return;
-
     const currentTime = Date.now();
     if (currentTime - lastGestureTime.current < GESTURE_COOLDOWN) return;
-
     const face = faces[0]; // Usar la primera cara detectada
     const gestureDetected = detectGesture(face);
-     
-    if (gestureDetected) {
-      lastGestureTime.current = currentTime;
-      handleGestos(gestureDetected);
-    }
+    handleGestos(gestureDetected);
   }, [navegacionActivada, isActive, handleGestos]);
 
   const detectGesture = (face) => {
@@ -71,7 +65,6 @@ export default function CameraBackground() {
     } else if (isSmiling) {
       return "smile";
     }
-
     return null;
   };
 
@@ -91,7 +84,7 @@ export default function CameraBackground() {
         mode: FaceDetector.FaceDetectorMode.fast,
         detectLandmarks: FaceDetector.FaceDetectorLandmarks.none,
         runClassifications: FaceDetector.FaceDetectorClassifications.all,
-        minDetectionInterval: 400,
+        minDetectionInterval:  400,
         tracking: true,
       }}
       style={styles.camera}
