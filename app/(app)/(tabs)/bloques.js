@@ -4,7 +4,7 @@ import colors from "../../../constants/colors";
 import { Text, Image, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import axios from "axios";
 import { useEffect, useState, useRef} from "react";
-import { useFocusEffect } from "expo-router";
+import { useNavigation} from "expo-router";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
 import { useGestos } from "../../context/GestosContext";
@@ -21,6 +21,7 @@ export default function Bloques() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const router = useRouter();
+    const navigation = useNavigation();
 
     //Recuperar token y estado de autenticación del AuthContext
     const { getToken, isAuthenticated, getPayloadFromJWT, setCursoId, cursoId } = useAuth();
@@ -97,8 +98,16 @@ export default function Bloques() {
     }, [isAuthenticated, cursoId]);
 
     useEffect(() => {
-        setCantidadBotones(bloques.length);
-    }, [bloques]);
+        const focusListener = navigation.addListener('focus', () => {
+          console.log("Pantalla en foco, ejecutando el efecto");
+          setCantidadBotones(bloques.length);
+          console.log("Cantidad de bloques:", bloques.length);
+        });
+    
+        return () => {
+          focusListener();
+        };
+      }, [navigation, bloques]);
 
     // Función para hacer scroll hasta el botón enfocado
     useEffect(() => {

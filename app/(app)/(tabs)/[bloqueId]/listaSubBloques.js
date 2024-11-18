@@ -3,7 +3,7 @@ import colors from "../../../../constants/colors";
 import { Text, ActivityIndicator, ScrollView, StyleSheet } from "react-native";
 import BotonL from "../../../../components/BotonL";
 import { useState, useEffect, useRef } from "react";
-import { useFocusEffect } from "expo-router";
+import { useNavigation} from "expo-router";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import { useAuth } from "../../../context/AuthContext";
@@ -19,6 +19,7 @@ export default function SubBloques() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const router = useRouter();
+    const navigation = useNavigation();
     
     //Recuperar bloqueId y nombre del bloque al que se accedió
     const { bloqueId } = useLocalSearchParams();
@@ -61,8 +62,13 @@ export default function SubBloques() {
     }, [isAuthenticated, bloqueId]);
 
     useEffect(() => {
-        setCantidadBotones(subBloques.length);
-    }, [subBloques]);
+        const focusListener = navigation.addListener('focus', () => {
+          setCantidadBotones(subBloques.length);
+        });
+        return () => {
+          focusListener();
+        };
+      }, [navigation, subBloques]);
 
     // Función para hacer scroll hasta el botón enfocado
     useEffect(() => {
