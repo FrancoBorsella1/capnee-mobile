@@ -3,12 +3,11 @@ import BotonL from "../../../components/BotonL";
 import colors from "../../../constants/colors";
 import { Text, Image, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import axios from "axios";
-import { useEffect, useState, useRef} from "react";
+import { useEffect, useState, useRef, useCallback} from "react";
 import { useNavigation} from "expo-router";
 import { useAuth } from "../../context/AuthContext";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useGestos } from "../../context/GestosContext";
-import SubBloques from "./[bloqueId]/listaSubBloques";
 // import { jwtDecode } from "jwt-decode";
 
 const mathLogo = require('../../../assets/math_symbols.png');
@@ -97,17 +96,16 @@ export default function Bloques() {
         fetchCourseAndBlocks();
     }, [isAuthenticated, cursoId]);
 
-    useEffect(() => {
-        const focusListener = navigation.addListener('focus', () => {
-          console.log("Pantalla en foco, ejecutando el efecto");
-          setCantidadBotones(bloques.length);
-          console.log("Cantidad de bloques:", bloques.length);
-        });
+    useFocusEffect(
+        useCallback(() => {
+            if (bloques.length > 0) {
+                console.log("Pantalla en foco, ejecutando el efecto");
+                setCantidadBotones(bloques.length);
+                console.log("Cantidad de bloques:", bloques.length);
+            }
+        }, [bloques])
+    );
     
-        return () => {
-          focusListener();
-        };
-      }, [navigation, bloques]);
 
     // Función para hacer scroll hasta el botón enfocado
     useEffect(() => {
@@ -135,7 +133,7 @@ export default function Bloques() {
 
     //Navegación a sub-bloques asociados a un bloque por ID
     const handleBlockPress = (bloqueId) => {
-        router.push({
+        router.replace({
             pathname: `/${bloqueId}/listaSubBloques`,
             params: {
                 cursoId: cursoId

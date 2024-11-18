@@ -2,10 +2,11 @@ import Fondo from "../../../../../../components/Fondo";
 import colors from "../../../../../../constants/colors";
 import { Text, ActivityIndicator, ScrollView, StyleSheet, View, Image } from "react-native";
 import BotonL from "../../../../../../components/BotonL";
-import { useState, useEffect } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import axios from "axios";
 import { useAuth } from "../../../../../context/AuthContext";
+import { useGestos } from "../../../../../context/GestosContext";
 import Header from "../../../../../../components/Header";
 import Constants from 'expo-constants';
 
@@ -26,6 +27,13 @@ export default function Ejercicios() {
 
     //Recuperar token y estado de autenticación del AuthContext
     const { getToken, isAuthenticated, cursoId } = useAuth();
+
+    //Recuperar indice de botones
+    const { indiceBotonFocus, setCantidadBotones, cantidadBotones } = useGestos();
+
+    //Referencia para el autoscroll de la pantalla
+    const scrollViewRef = useRef(null);
+    const buttonRefs = useRef([]);
 
     const getEjercicios = async () => {
         try {
@@ -55,6 +63,28 @@ export default function Ejercicios() {
         }
     }, [isAuthenticated, contenidoTematicoId]);
 
+    useFocusEffect(
+        useCallback(() => {
+            if (ejercicios.length > 0) {
+                console.log("Pantalla en foco, ejecutando el efecto");
+                setCantidadBotones(ejercicios.length);
+                console.log("Cantidad de ejercicios:", ejercicios.length);
+            }
+        }, [ejercicios])
+    );
+
+    // Función para hacer scroll hasta el botón enfocado
+    useEffect(() => {
+        if (scrollViewRef.current && buttonRefs.current[indiceBotonFocus]) {
+            buttonRefs.current[indiceBotonFocus].measureLayout(
+                scrollViewRef.current,
+                (x, y) => {
+                    scrollViewRef.current.scrollTo({ y: y - 100, animated: true });
+                }
+            );
+        }
+    }, [indiceBotonFocus]);
+
 
     if (loading) {
         return (
@@ -70,7 +100,7 @@ export default function Ejercicios() {
 
     //Navegar hacia un ejercicio en particular
     const handleExercisePress = (ejercicioId, isResolved) => {
-        router.push({
+        router.replace({
             pathname: `/${bloqueId}/${subBloqueId}/${contenidoTematicoId}/${ejercicioId}/ejercicio`,
             params: { isResolved }
         })
@@ -78,7 +108,7 @@ export default function Ejercicios() {
 
     //Volver a pantalla de contenidos
     const handleBack = () => {
-        router.push({
+        router.replace({
             pathname: `/${bloqueId}/${subBloqueId}/listaContenidos`,
         });
     };
@@ -92,13 +122,16 @@ export default function Ejercicios() {
             />
             { ejercicios.length > 0 ?
                 <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner}>
-                    {ejercicios.map((ejercicio) => (
+                    {ejercicios.map((ejercicio, index) => (
                         <BotonL
                             key={ejercicio.id}
                             titulo={ejercicio.title}
                             tamanoFuente={30}
+                            index={index}
+                            focused={indiceBotonFocus === index}
                             onPress={() => handleExercisePress(ejercicio.id, ejercicio.isResolved)}
                             resuelto={ejercicio.isResolved}
+                            buttonRef={(ref) => buttonRefs.current[index] = ref}
                         />
                     ))}
                 </ScrollView>

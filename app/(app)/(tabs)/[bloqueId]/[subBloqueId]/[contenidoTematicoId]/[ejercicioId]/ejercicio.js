@@ -6,9 +6,10 @@ import BotonS from "../../../../../../../components/BotonS";
 import { BackWhite } from "../../../../../../../components/Icons";
 import colors from "../../../../../../../constants/colors";
 import Constants from 'expo-constants';
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Audio } from "expo-av";
 import { useAuth } from "../../../../../../context/AuthContext";
+import { useGestos } from "../../../../../../context/GestosContext";
 import axios from "axios";
 
 //Imagenes
@@ -18,7 +19,13 @@ const medalla = require('../../../../../../../assets/medal.png');
 const API_URL = 'http://149.50.140.55:8082';
 
 export default function Ejercicio(){
-    const [ejercicio, setEjercicio] = useState([]);
+    const [ejercicio, setEjercicio] = useState({
+        options: [],
+        title: '',
+        statement: '',
+        attachedImageBase64: '',
+        correctOptionPosition: null
+    });
     //Estado para manejar el Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -51,20 +58,36 @@ export default function Ejercicio(){
     //Recuperar token y estado de autenticación
     const { getToken, isAuthenticated, estudianteId } = useAuth();
 
+    //Recuperar indice de botones
+    const { indiceBotonFocus, setCantidadBotones, cantidadBotones } = useGestos();
+
+    //Referencia para el autoscroll de la pantalla
+    const scrollViewRef = useRef(null);
+    const buttonRefs = useRef([]);
+
     const getEjercicio = async () => {
         try {
+            setLoading(true);
             const token = await getToken();
             const response = await axios.get(`${API_URL}/exercises/get-by-id?id=${ejercicioId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            setEjercicio(response.data);
-            setOpcionCorrecta(response.data.options[response.data.correctOptionPosition]);
+
+            if (response.data && response.data.options) {
+                setEjercicio(response.data);
+                setOpcionCorrecta(response.data.options[response.data.correctOptionPosition]);
+                // Actualizar la cantidad de botones cuando los datos están disponibles
+                setCantidadBotones(response.data.options.length);
+            } else {
+                throw new Error('Datos del ejercicio incompletos');
+            }
 
         } catch (e) {
             console.error('Error al obtener ejercicio: ', e);
-            setError('Error al obtener el ejercicio.')
+            setError('Error al obtener el ejercicio.');
+            setCantidadBotones(0);
         } finally {
             setLoading(false);
         }
@@ -78,6 +101,28 @@ export default function Ejercicio(){
             setLoading(false);
         }
     }, [isAuthenticated, ejercicioId]);
+
+    useFocusEffect(
+        useCallback(() => {
+            if (ejercicio && ejercicio.options) {
+                console.log("Pantalla en foco, ejecutando el efecto");
+                setCantidadBotones(ejercicio.options.length);
+                console.log("Cantidad de opciones:", ejercicio.options.length);
+            }
+        }, [ejercicio])
+    );
+
+    // Función para hacer scroll hasta el botón enfocado
+    useEffect(() => {
+        if (scrollViewRef.current && buttonRefs.current[indiceBotonFocus]) {
+            buttonRefs.current[indiceBotonFocus].measureLayout(
+                scrollViewRef.current,
+                (x, y) => {
+                    scrollViewRef.current.scrollTo({ y: y - 100, animated: true });
+                }
+            );
+        }
+    }, [indiceBotonFocus]);
 
     //Obtener el estado de ejercicio (Resuelto o no resuelto) cuando se monta el componente
     useEffect(() => {
@@ -249,15 +294,17 @@ export default function Ejercicio(){
                 />
             </View>
             <Animated.ScrollView style={[{ transform: [{ translateX: shakeAnimation }] }]}>
-            {ejercicio.options && Array.isArray(ejercicio.options) ? (
+            {ejercicio && ejercicio.options && Array.isArray(ejercicio.options) ? (
                 ejercicio.options.map((opcion, index) => (
                 <BotonS
                     key={index}
                     titulo={opcion}
                     onPress={() => handlePress(opcion)}
                     reproducirSonido={false}
+                    index={index}
                     habilitado={!resuelto} //El botón se deshabilita si el ejercicio está resuelto
                     colorFondo={resuelto && opcion === opcionCorrecta ? colors.verde : undefined}
+                    buttonRef={(ref) => buttonRefs.current[index] = ref}
                 />
                 ))
             ) : (

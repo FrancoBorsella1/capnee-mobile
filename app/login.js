@@ -66,6 +66,7 @@ export default function Login() {
                         titulo="Inicio de sesión facial"
                         tamanoFuente={24}
                         onPress={handlePress}
+                        habilitado={false}
                     />
                 </View>       
             </ScrollView>
