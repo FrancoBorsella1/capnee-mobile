@@ -122,7 +122,7 @@ export default function Ejercicios() {
                 nombrePagina={`Ejercicios: ${nombreContenido}`}
             />
             { ejercicios.length > 0 ?
-                <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner}>
+                <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner} ref={scrollViewRef}>
                     {ejercicios.map((ejercicio, index) => (
                         <BotonL
                             key={ejercicio.id}

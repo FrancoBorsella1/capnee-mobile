@@ -117,7 +117,7 @@ export default function SubBloques() {
                 onPress={handleBack}
                 nombrePagina={nombreBloque}
             />
-            <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner}>
+            <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner} ref={scrollViewRef}>
                 {Array.isArray(subBloques) && subBloques.length > 0 ? (
                     subBloques.map((subBloque, index) => (
                         <BotonL

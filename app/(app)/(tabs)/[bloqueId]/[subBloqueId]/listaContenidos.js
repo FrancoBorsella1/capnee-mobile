@@ -114,7 +114,7 @@ export default function Contenidos() {
                 onPress={handleBack}
                 nombrePagina={nombreSubBloque}
             />
-            <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner}>
+            <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner} ref={scrollViewRef}>
                 {contenidos.map((contenido, index) => (
                     <BotonL
                         key={contenido.id}

@@ -287,7 +287,7 @@ export default function Ejercicio(){
                     resizeMode="contain"
                 />
             </View>
-            <Animated.ScrollView style={[{ transform: [{ translateX: shakeAnimation }] }]}>
+            <Animated.ScrollView style={[{ transform: [{ translateX: shakeAnimation }] }]} ref={scrollViewRef}>
             {ejercicio && ejercicio.options && Array.isArray(ejercicio.options) ? (
                 ejercicio.options.map((opcion, index) => (
                 <BotonS
