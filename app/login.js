@@ -17,7 +17,7 @@ export default function Login() {
     const router = useRouter();
 
     const handlePress = () => {
-        router.push('/loginFacial')
+        router.replace('/loginFacial')
     }
 
     const handleLogin = async () => {

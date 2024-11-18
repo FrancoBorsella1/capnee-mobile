@@ -85,7 +85,7 @@ export default function Perfil() {
     };
 
     const handleOptions = async () => {
-        router.push('/opciones');
+        router.replace('/opciones');
     }
 
     const handleLogout = async () => {

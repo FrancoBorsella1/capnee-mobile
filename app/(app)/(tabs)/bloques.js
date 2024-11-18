@@ -34,6 +34,7 @@ export default function Bloques() {
 
     const getBloques = async () => {
         try {
+            setLoading(true);
             const token = await getToken();
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             const response = await axios.get(`${API_URL_ACADEMY}/thematic-blocks/get-all-by-course?id=${cursoId}`, {
@@ -53,6 +54,7 @@ export default function Bloques() {
 
     const getCourse = async () => {
         try {
+            setLoading(true);
             //Obtener token
             const token = await getToken();
 

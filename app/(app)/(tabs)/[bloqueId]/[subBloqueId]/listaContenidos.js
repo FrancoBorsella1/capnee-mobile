@@ -34,6 +34,7 @@ export default function Contenidos() {
 
     const getContenidos = async () => {
         try {
+            setLoading(true);
             const token = await getToken();
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             const response = await axios.get(`${API_URL}/thematic-content/get-all-by-thematic-subblock-id-and-course-id?thematicSubblockId=${subBloqueId}&courseId=${cursoId}`, {

@@ -159,9 +159,9 @@ const styles = StyleSheet.create({
         backgroundColor: colors.verde,
     },
     focused: {
-        borderWidth: 8,
+        borderWidth: 6,
         borderColor: colors.blanco,
-        borderStyle: 'dashed'
+        borderStyle: 'dashed',
     },
 }
 )

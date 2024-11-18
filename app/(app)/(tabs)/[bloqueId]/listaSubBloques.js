@@ -36,6 +36,7 @@ export default function SubBloques() {
 
     const getSubBloques = async () => {
         try {
+            setLoading(true);
             const token = await getToken();
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             const response = await axios.get(`${API_URL}/thematic-subblocks/get-all-by-course-and-thematic-block?courseId=${cursoId}&thematicBlockId=${bloqueId}`, {
@@ -70,7 +71,6 @@ export default function SubBloques() {
             }
         }, [subBloques])
     );
-    
 
     // Función para hacer scroll hasta el botón enfocado
     useEffect(() => {
@@ -99,14 +99,14 @@ export default function SubBloques() {
 
     //Navegación a contenidos temáticos asociado a un sub-bloque por ID
     const handleSubBlockPress = (subBloqueId) => {
-        router.push({
+        router.replace({
             pathname: `/${bloqueId}/${subBloqueId}/listaContenidos`,
         });
     };
 
     //Volver a pantalla bloques
     const handleBack = () => {
-        router.push({
+        router.replace({
             pathname: `/bloques`,
         });
     };

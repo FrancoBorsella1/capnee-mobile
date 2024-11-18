@@ -54,7 +54,7 @@ export default function Opciones() {
                 <BotonS
                     titulo="Configurar gestos"
                     IconoComponente={Eye}
-                    tamanoFuente={22} 
+                    tamanoFuente={22}
                 />
             </View>
         </Fondo>

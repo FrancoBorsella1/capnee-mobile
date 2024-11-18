@@ -37,6 +37,7 @@ export default function Ejercicios() {
 
     const getEjercicios = async () => {
         try {
+            setLoading(true);
             const token = await getToken();
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             const response = await axios.get(`${API_URL}/exercises-students/get-all-by-course-id-and-thematic-content-id?courseId=${cursoId}&thematicContentId=${contenidoTematicoId}`, {

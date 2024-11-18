@@ -19,13 +19,7 @@ const medalla = require('../../../../../../../assets/medal.png');
 const API_URL = 'http://149.50.140.55:8082';
 
 export default function Ejercicio(){
-    const [ejercicio, setEjercicio] = useState({
-        options: [],
-        title: '',
-        statement: '',
-        attachedImageBase64: '',
-        correctOptionPosition: null
-    });
+    const [ejercicio, setEjercicio] = useState({});
     //Estado para manejar el Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -87,7 +81,7 @@ export default function Ejercicio(){
         } catch (e) {
             console.error('Error al obtener ejercicio: ', e);
             setError('Error al obtener el ejercicio.');
-            setCantidadBotones(0);
+            // setCantidadBotones(0);
         } finally {
             setLoading(false);
         }
@@ -302,6 +296,7 @@ export default function Ejercicio(){
                     onPress={() => handlePress(opcion)}
                     reproducirSonido={false}
                     index={index}
+                    focused={indiceBotonFocus === index}
                     habilitado={!resuelto} //El botón se deshabilita si el ejercicio está resuelto
                     colorFondo={resuelto && opcion === opcionCorrecta ? colors.verde : undefined}
                     buttonRef={(ref) => buttonRefs.current[index] = ref}
