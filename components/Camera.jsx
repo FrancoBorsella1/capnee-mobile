@@ -45,7 +45,7 @@ export default function CameraBackground() {
 
     const face = faces[0]; // Usar la primera cara detectada
     const gestureDetected = detectGesture(face);
-    
+     
     if (gestureDetected) {
       lastGestureTime.current = currentTime;
       handleGestos(gestureDetected);
@@ -91,7 +91,7 @@ export default function CameraBackground() {
         mode: FaceDetector.FaceDetectorMode.fast,
         detectLandmarks: FaceDetector.FaceDetectorLandmarks.none,
         runClassifications: FaceDetector.FaceDetectorClassifications.all,
-        minDetectionInterval: 300,
+        minDetectionInterval: 400,
         tracking: true,
       }}
       style={styles.camera}
