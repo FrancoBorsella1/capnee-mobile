@@ -1,7 +1,8 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import colors from "../constants/colors";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Audio } from "expo-av";
+import { useGestos } from "../app/context/GestosContext";
 
 // Función para oscurecer cualquier color
 const darkenColor = (color, factor = 0.2) => {
@@ -32,7 +33,9 @@ export default function BotonS({
     reproducirSonido = true,
     resuelto = false,
     habilitado = true,
-    focused
+    focused,
+    index,
+    buttonRef
 }) {
     // Variables de estado de sonido
     const [sound, setSound] = useState();
@@ -73,6 +76,25 @@ export default function BotonS({
         }
     };
 
+    // Registrar la acción del botón cuando se monta
+    useEffect(() => {
+        if (habilitado && onPress) {
+            const buttonAction = () => {
+                playSound();
+                onPress();
+            };
+            registerButtonAction(index, buttonAction);
+            
+            // Limpiar cuando el componente se desmonte
+            return () => unregisterButtonAction(index);
+        }
+    }, [index, habilitado, onPress]);
+
+    //Manejar el enfoque del botón
+    const { indiceBotonFocus, navegacionActivada, registerButtonAction, unregisterButtonAction } = useGestos();
+
+    const isFocused = indiceBotonFocus === index;
+
     return (
         <Pressable
             onPress={handlePress}
@@ -82,9 +104,10 @@ export default function BotonS({
                 },
                 resuelto && styles.botonResuelto,
                 styles.boton,
-                focused ? styles.focused : styles.unfocused,
+                navegacionActivada && focused ? styles.focused : null,
             ]}
             disabled={!habilitado}
+            ref={buttonRef}
         >
             <View style={styles.conteiner}>
                 {IconoComponente && (
