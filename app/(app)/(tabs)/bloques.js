@@ -3,10 +3,12 @@ import BotonL from "../../../components/BotonL";
 import colors from "../../../constants/colors";
 import { Text, Image, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import axios from "axios";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef} from "react";
+import { useFocusEffect } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
 import { useRouter } from "expo-router";
 import { useGestos } from "../../context/GestosContext";
+import SubBloques from "./[bloqueId]/listaSubBloques";
 // import { jwtDecode } from "jwt-decode";
 
 const mathLogo = require('../../../assets/math_symbols.png');
@@ -24,7 +26,7 @@ export default function Bloques() {
     const { getToken, isAuthenticated, getPayloadFromJWT, setCursoId, cursoId } = useAuth();
 
     //Recuperar indice de botones
-    const { indiceBotonFocus, setCantidadBotones } = useGestos();
+    const { indiceBotonFocus, setCantidadBotones, cantidadBotones } = useGestos();
 
     //Referencia para el autoscroll de la pantalla
     const scrollViewRef = useRef(null);

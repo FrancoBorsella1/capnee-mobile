@@ -2,10 +2,12 @@ import Fondo from "../../../../components/Fondo";
 import colors from "../../../../constants/colors";
 import { Text, ActivityIndicator, ScrollView, StyleSheet } from "react-native";
 import BotonL from "../../../../components/BotonL";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useFocusEffect } from "expo-router";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 import { useAuth } from "../../../context/AuthContext";
+import { useGestos } from "../../../context/GestosContext";
 import Header from "../../../../components/Header";
 import Constants from 'expo-constants';
 
@@ -23,6 +25,13 @@ export default function SubBloques() {
     
     //Recuperar token y estado de autenticación del AuthContext
     const { getToken, isAuthenticated, cursoId } = useAuth();
+
+    //Recuperar indice de botones
+    const { indiceBotonFocus, setCantidadBotones, cantidadBotones } = useGestos();
+
+    //Referencia para el autoscroll de la pantalla
+    const scrollViewRef = useRef(null);
+    const buttonRefs = useRef([]);
 
     const getSubBloques = async () => {
         try {
@@ -50,6 +59,22 @@ export default function SubBloques() {
             setLoading(false);
         }
     }, [isAuthenticated, bloqueId]);
+
+    useEffect(() => {
+        setCantidadBotones(subBloques.length);
+    }, [subBloques]);
+
+    // Función para hacer scroll hasta el botón enfocado
+    useEffect(() => {
+        if (scrollViewRef.current && buttonRefs.current[indiceBotonFocus]) {
+            buttonRefs.current[indiceBotonFocus].measureLayout(
+                scrollViewRef.current,
+                (x, y) => {
+                    scrollViewRef.current.scrollTo({ y: y - 100, animated: true });
+                }
+            );
+        }
+    }, [indiceBotonFocus]);
 
 
     if (loading) {
@@ -86,13 +111,16 @@ export default function SubBloques() {
             />
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.conteiner}>
                 {Array.isArray(subBloques) && subBloques.length > 0 ? (
-                    subBloques.map((subBloque) => (
+                    subBloques.map((subBloque, index) => (
                         <BotonL
                             key={subBloque.id}
                             titulo={subBloque.name}
                             tamanoFuente={30}
                             habilitado={subBloque.isEnabled}
+                            index={index}
+                            focused={indiceBotonFocus === index}
                             onPress={() => handleSubBlockPress(subBloque.id, subBloque.name)}
+                            buttonRef={(ref) => buttonRefs.current[index] = ref}
                         />
                     ))
                 ) : (
