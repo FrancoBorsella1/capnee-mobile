@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { ScrollView, View, Text, Image, StyleSheet, Modal, Animated, ActivityIndicator } from "react-native";
 import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import Fondo from "../../../../../../../components/Fondo";
@@ -52,7 +53,6 @@ export default function Ejercicio(){
     //Recuperar token y estado de autenticación
     const { getToken, isAuthenticated, estudianteId } = useAuth();
 
-
     const [indiceBotonFocus, setIndiceBotonFocus] = useState(0);
     const [cantidadBotones, setCantidadBotones] = useState(0);
     const buttonActionsRef = useRef({})
@@ -73,6 +73,9 @@ export default function Ejercicio(){
     const scrollViewRef = useRef(null);
     const buttonRefs = useRef([]);
 
+    // Referencia para almacenar el intervalo
+    const intervaloRef = useRef(null);
+
     const getEjercicio = async () => {
         try {
             setLoading(true);
@@ -86,8 +89,8 @@ export default function Ejercicio(){
             if (response.data && response.data.options) {
                 setEjercicio(response.data);
                 setOpcionCorrecta(response.data.options[response.data.correctOptionPosition]);
-                // Actualizar la cantidad de botones cuando los datos están disponibles
                 setCantidadBotones(response.data.options.length);
+
             } else {
                 throw new Error('Datos del ejercicio incompletos');
             }
@@ -105,10 +108,13 @@ export default function Ejercicio(){
     useEffect(() => {
         if (isAuthenticated) {
             getEjercicio();
+            if (isResolved !== undefined) {
+                setResuelto(isResolved === 'true');
+            }
         } else {
             setLoading(false);
         }
-    }, [isAuthenticated, ejercicioId]);
+    }, [isAuthenticated, ejercicioId, isResolved]);
 
     useFocusEffect(
         useCallback(() => {
@@ -141,39 +147,51 @@ export default function Ejercicio(){
                             action();
                         }
                     }
-                }, 300); // Repite cada 300ms (ajusta según sea necesario)
+                }, 400);
     
                 // Limpieza para evitar fugas de memoria
                 return () => clearInterval(interval);
             }
-        }, [gesture, cantidadBotones, indiceBotonFocus]) // Asegúrate de incluir las dependencias necesarias
+        }, [gesture, cantidadBotones, indiceBotonFocus])
     );
 
     //Obtener el estado de ejercicio (Resuelto o no resuelto) cuando se monta el componente
-    useEffect(() => {
-        if (isResolved !== undefined) {
-            setResuelto(isResolved === 'true');
-        }
-    }, [isResolved]);
-
+    useFocusEffect(
+        useCallback(() => {
+            if (isResolved !== undefined) {
+                setResuelto(isResolved === 'true');
+            }
+        }, [isResolved, ejercicioId])
+    );
+    
     //Capturar el tiempo de estadía en pantalla
     useFocusEffect(
-        React.useCallback(() => {
-            if (resuelto) return;
-            let intervalo;
-
-            // eslint-disable-next-line no-undef
-            intervalo = setInterval(() => {
-                setTiempoEnPantalla((prevTiempo) => prevTiempo + 1);
-            }, 1000);
-
+        useCallback(() => {
+            if (!resuelto) {
+                // Reiniciar el contador de tiempo cada vez que entre al ejercicio
+                setTiempoEnPantalla(0);
+    
+                // Limpiar el intervalo anterior
+                if (intervaloRef.current) {
+                    clearInterval(intervaloRef.current);
+                }
+    
+                // Establecer un nuevo intervalo para el conteo de tiempo
+                intervaloRef.current = setInterval(() => {
+                    setTiempoEnPantalla((prevTiempo) => prevTiempo + 1);
+                }, 1000);
+            }
+    
+            // Limpiar el intervalo cuando se deje de ver la pantalla
             return () => {
-                // eslint-disable-next-line no-undef
-                clearInterval(intervalo);
-                console.log(`Tiempo en pantalla: ${tiempoEnPantalla} segundos`);
+                if (intervaloRef.current) {
+                    clearInterval(intervaloRef.current);
+                }
             };
-        }, [tiempoEnPantalla, resuelto])
+        }, [ejercicioId, resuelto])
     );
+
+    console.log(`Tiempo en pantalla: ${tiempoEnPantalla} segundos`);
 
     //Volver a pantalla de contenidos
     const handleBack = () => {
@@ -188,33 +206,56 @@ export default function Ejercicio(){
 
     //Gestionar opciones de respuesta
     const handlePress = async (opcionSeleccionada) => {
-        if (opcionSeleccionada === ejercicio.options[ejercicio.correctOptionPosition]) {
+        if (resuelto) return;
+    
+        const esCorrecta = opcionSeleccionada === ejercicio.options[ejercicio.correctOptionPosition];
+        
+        if (esCorrecta) {
+            // Actualizar estados locales inmediatamente
             setResuelto(true);
             setIsModalOpen(true);
-            playCorrectSound();
-
-            //Se construye el objeto que se va a enviar en la petición
-            const data = {
-                studentId: estudianteId,
-                exerciseId: ejercicioId,
-                numberOfAttempts: cantidadFallos,
-                solved: true,
-                resolutionTime: tiempoEnPantalla*1000
-            };
-
+            setOpcionCorrecta(ejercicio.options[ejercicio.correctOptionPosition]);
+            playCorrectSound(); 
+    
+            if (intervaloRef.current) {
+                clearInterval(intervaloRef.current);
+            }
+    
+            // Enviar datos al backend en segundo plano
             try {
-                const response = await axios.post(`${API_URL}/exercises/solve`, data);
-                console.log('Se ha enviado el ejercicio correctamente: ', response.data)
+                const data = {
+                    studentId: estudianteId,
+                    exerciseId: ejercicioId,
+                    numberOfAttempts: cantidadFallos,
+                    solved: true,
+                    resolutionTime: tiempoEnPantalla * 1000,
+                };
+                
+                await axios.post(`${API_URL}/exercises/solve`, data);
             } catch (error) {
                 console.error('Error al enviar los datos: ', error);
+                // Opcional: Mostrar un toast o notificación de error al usuario
             }
-
         } else {
-            temblar();
-            playErrorSound();
-            setCantidadFallos(cantidadFallos + 1);
+            if (!resuelto) {
+                temblar();
+                playErrorSound();
+                setCantidadFallos(cantidadFallos + 1);
+            }
         }
-    }
+    };
+
+    // Función para hacer scroll hasta el botón enfocado
+    useEffect(() => {
+        if (scrollViewRef.current && buttonRefs.current[indiceBotonFocus]) {
+            buttonRefs.current[indiceBotonFocus].measureLayout(
+                scrollViewRef.current,
+                (x, y) => {
+                    scrollViewRef.current.scrollTo({ y: y - 100, animated: true });
+                }
+            );
+        }
+    }, [indiceBotonFocus]);
 
     // Función para animación de temblar
     const temblar = () => {
@@ -268,82 +309,89 @@ export default function Ejercicio(){
         };
     }, [correctSound, errorSound]);
 
-    return(
+    return (
         <Fondo color={colors.celeste}>
             <Header
-                nombrePagina={ejercicio.title}
+                nombrePagina={ejercicio.title || "Cargando..."}
                 onPress={handleBack}
             />
-            {resuelto ? 
-                <Image
-                source={medalla}
-                style={styles.medalla}
-                />
-                :
-                null
-            }
-
-            <Modal animationType="fade" visible={isModalOpen} transparent>
-                <View style={styles.modal}>
-                    <View style={styles.modalCard}>
-                        <Text style={styles.textoModal}>¡Muy bien!</Text>
+            {loading ? (
+                // Indicador de carga
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={colors.blanco} />
+                </View>
+            ) : (
+                // Contenido principal
+                <>
+                    {resuelto ? (
                         <Image
-                            source={imagenModal}
-                            style={styles.imagenModal}
+                            source={medalla}
+                            style={styles.medalla}
+                        />
+                    ) : null}
+    
+                    <Modal animationType="fade" visible={isModalOpen} transparent>
+                        <View style={styles.modal}>
+                            <View style={styles.modalCard}>
+                                <Text style={styles.textoModal}>¡Muy bien!</Text>
+                                <Image
+                                    source={imagenModal}
+                                    style={styles.imagenModal}
+                                    resizeMode="contain"
+                                />
+                                <BotonS
+                                    titulo="Volver a ejercicios"
+                                    IconoComponente={BackWhite}
+                                    onPress={handleBack}
+                                />
+                            </View>
+                        </View>
+                    </Modal>
+    
+                    <View style={styles.enunciadoWrapper}>
+                        <ScrollView contentContainerStyle={styles.scrollContenido}>
+                            <Text style={styles.texto}>{ejercicio.statement}</Text>
+                        </ScrollView>
+                    </View>
+    
+                    <View style={styles.imagenContainer}>
+                        <Image 
+                            source={{
+                                uri: ejercicio.attachedImageBase64
+                                    ? `data:image/jpeg;base64, ${ejercicio.attachedImageBase64}`
+                                    : `data:image/png;base64, ${ejercicio.attachedImageBase64}`
+                            }} 
+                            style={styles.imagen}
                             resizeMode="contain"
                         />
-                        <BotonS
-                            titulo="Volver a ejercicios"
-                            IconoComponente={BackWhite}
-                            onPress={handleBack}
-                        />
                     </View>
-                </View>
-            </Modal>
-            <View style={styles.enunciadoWrapper}>
-                <ScrollView contentContainerStyle={styles.scrollContenido}>
-                    <Text style={styles.texto}>
-                        {ejercicio.statement}
-                    </Text>
-                </ScrollView>
-            </View>
-            <View style={styles.imagenContainer}>
-                <Image 
-                    source={{
-                        uri: ejercicio.attachedImageBase64
-                        ? `data:image/jpeg;base64, ${ejercicio.attachedImageBase64}`
-                        : `data:image/png;base64, ${ejercicio.attachedImageBase64}`
-                    }} 
-                    style={styles.imagen}
-                    resizeMode="contain"
-                />
-            </View>
-            <Animated.ScrollView style={[{ transform: [{ translateX: shakeAnimation }] }]} ref={scrollViewRef}>
-            {ejercicio && ejercicio.options && Array.isArray(ejercicio.options) ? (
-                ejercicio.options.map((opcion, index) => (
-                <BotonS
-                    key={index}
-                    titulo={opcion}
-                    onPress={() => handlePress(opcion)}
-                    reproducirSonido={false}
-                    index={index}
-                    focused={indiceBotonFocus === index}
-                    habilitado={!resuelto} //El botón se deshabilita si el ejercicio está resuelto
-                    colorFondo={resuelto && opcion === opcionCorrecta ? colors.verde : undefined}
-                    buttonRef={(ref) => {
-                        buttonRefs.current[index] = ref;
-                         registerButtonAction(index, () => handlePress(opcion)); // Registro de acción
-                         }}
-                />
-                ))
-            ) : (
-                <Fondo color={colors.celeste}>
-                    <ActivityIndicator size="large" color={colors.blanco} style={{flex: 1}}/>
-                </Fondo>
+    
+                    <Animated.ScrollView 
+                        style={[{ transform: [{ translateX: shakeAnimation }] }]} 
+                        ref={scrollViewRef}
+                    >
+                        {ejercicio.options.map((opcion, index) => (
+                            <BotonS
+                                key={index}
+                                titulo={opcion}
+                                onPress={() => handlePress(opcion)}
+                                reproducirSonido={false}
+                                index={index}
+                                focused={indiceBotonFocus === index}
+                                habilitado={!resuelto}
+                                colorFondo={resuelto && opcion === opcionCorrecta ? colors.verde : undefined}
+                                buttonRef={(ref) => {
+                                    buttonRefs.current[index] = ref;
+                                    registerButtonAction(index, () => !resuelto && handlePress(opcion));
+                                }}
+                            />
+                        ))}
+                    </Animated.ScrollView>
+                </>
             )}
-            </Animated.ScrollView>
         </Fondo>
-    )
+    );
+    
 }
 
 const styles = StyleSheet.create({

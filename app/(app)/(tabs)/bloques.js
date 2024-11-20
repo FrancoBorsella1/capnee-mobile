@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import Fondo from "../../../components/Fondo";
 import BotonL from "../../../components/BotonL";
 import colors from "../../../constants/colors";
@@ -141,7 +142,7 @@ export default function Bloques() {
                             action();
                         }
                     }
-                }, 300); // Repite cada 300ms (ajusta según sea necesario)
+                }, 400);
     
                 // Limpieza para evitar fugas de memoria
                 return () => clearInterval(interval);
@@ -150,7 +151,7 @@ export default function Bloques() {
     );
     
     
-   /* useEffect(() => {
+   useEffect(() => {
         if (scrollViewRef.current && buttonRefs.current[indiceBotonFocus]) {
             buttonRefs.current[indiceBotonFocus].measureLayout(
                 scrollViewRef.current,
@@ -159,7 +160,7 @@ export default function Bloques() {
                 }
             );
         }
-    }, [indiceBotonFocus]); */
+    }, [indiceBotonFocus]);
  
     if (loading) {
         return (

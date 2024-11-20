@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import Fondo from "../../../../../../components/Fondo";
 import colors from "../../../../../../constants/colors";
 import { Text, ActivityIndicator, ScrollView, StyleSheet, View, Image } from "react-native";
@@ -20,6 +21,7 @@ export default function Ejercicios() {
     const [ejercicios, setEjercicios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [lastUpdate, setLastUpdate] = useState(Date.now());
     const router = useRouter();
     
     const [indiceBotonFocus, setIndiceBotonFocus] = useState(0);
@@ -68,13 +70,15 @@ export default function Ejercicios() {
         }
     };
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            getEjercicios();
-        } else {
-            setLoading(false);
-        }
-    }, [isAuthenticated, contenidoTematicoId]);
+    useFocusEffect(
+        useCallback(() => {
+            if (isAuthenticated) {
+                getEjercicios();
+            } else {
+                setLoading(false)
+            }
+        }, [isAuthenticated, lastUpdate, contenidoTematicoId]) // Añadir lastUpdate como dependencia
+    );
 
     useFocusEffect(
         useCallback(() => {
@@ -86,7 +90,7 @@ export default function Ejercicios() {
         }, [ejercicios])
     );
 
-    // Función para hacer scroll hasta el botón enfocado
+    // Detección de gestos
     useFocusEffect(
         useCallback(() => {
             console.log("SUBBLOQUES");
@@ -107,14 +111,25 @@ export default function Ejercicios() {
                             action();
                         }
                     }
-                }, 300); // Repite cada 300ms (ajusta según sea necesario)
+                }, 400);
     
                 // Limpieza para evitar fugas de memoria
                 return () => clearInterval(interval);
             }
-        }, [gesture, cantidadBotones, indiceBotonFocus]) // Asegúrate de incluir las dependencias necesarias
+        }, [gesture, cantidadBotones, indiceBotonFocus])
     );
 
+    // Función para hacer scroll hasta el botón enfocado
+    useEffect(() => {
+        if (scrollViewRef.current && buttonRefs.current[indiceBotonFocus]) {
+            buttonRefs.current[indiceBotonFocus].measureLayout(
+                scrollViewRef.current,
+                (x, y) => {
+                    scrollViewRef.current.scrollTo({ y: y - 100, animated: true });
+                }
+            );
+        }
+    }, [indiceBotonFocus]);
 
     if (loading) {
         return (
@@ -130,10 +145,10 @@ export default function Ejercicios() {
 
     //Navegar hacia un ejercicio en particular
     const handleExercisePress = (ejercicioId, isResolved) => {
-        router.replace({
+        router.replace({ 
             pathname: `/${bloqueId}/${subBloqueId}/${contenidoTematicoId}/${ejercicioId}/ejercicio`,
-            params: { isResolved }
-        })
+            params: { isResolved: isResolved }
+        });
     };
 
     //Volver a pantalla de contenidos

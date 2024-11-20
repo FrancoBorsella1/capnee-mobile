@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import Fondo from "../../../../components/Fondo";
 import colors from "../../../../constants/colors";
 import { Text, ActivityIndicator, ScrollView, StyleSheet } from "react-native";
@@ -83,8 +84,7 @@ export default function SubBloques() {
         }, [subBloques])
     );
 
-    // Función para hacer scroll hasta el botón enfocado
-    // Función para hacer scroll hasta el botón enfocado
+    // Detección de gestos
     useFocusEffect(
         useCallback(() => {
             if (gesture !== null) {
@@ -104,13 +104,25 @@ export default function SubBloques() {
                             action();
                         }
                     }
-                }, 300); // Repite cada 300ms (ajusta según sea necesario)
+                }, 400);
     
                 // Limpieza para evitar fugas de memoria
                 return () => clearInterval(interval);
             }
         }, [gesture, cantidadBotones, indiceBotonFocus]) // Asegúrate de incluir las dependencias necesarias
     );
+
+    // Función para hacer scroll hasta el botón enfocado
+    useEffect(() => {
+        if (scrollViewRef.current && buttonRefs.current[indiceBotonFocus]) {
+            buttonRefs.current[indiceBotonFocus].measureLayout(
+                scrollViewRef.current,
+                (x, y) => {
+                    scrollViewRef.current.scrollTo({ y: y - 100, animated: true });
+                }
+            );
+        }
+    }, [indiceBotonFocus]);
 
 
     if (loading) {

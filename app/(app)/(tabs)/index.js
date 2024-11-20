@@ -59,7 +59,7 @@ export default function Index() {
     }, [])
 
     const handlePress = () => {
-        router.replace('/bloques');
+        router.push('/bloques');
     };
 
     return (

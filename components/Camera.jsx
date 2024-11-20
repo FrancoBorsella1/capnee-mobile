@@ -9,7 +9,7 @@ export default function CameraBackground() {
   const [isActive, setIsActive] = useState(true);
   const { handleGestos, navegacionActivada,setGesture,gesture } = useGestos();
   const lastGestureTime = useRef(Date.now());
-  const GESTURE_COOLDOWN = 500;
+  const GESTURE_COOLDOWN = 600;
 
   // Manejo de permisos de cámara
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function CameraBackground() {
         mode: FaceDetector.FaceDetectorMode.fast,
         detectLandmarks: FaceDetector.FaceDetectorLandmarks.none,
         runClassifications: FaceDetector.FaceDetectorClassifications.all,
-        minDetectionInterval:  400,
+        minDetectionInterval: 400,
         tracking: true,
       }}
       style={styles.camera}
