@@ -77,7 +77,7 @@ export default function Ejercicios() {
             } else {
                 setLoading(false)
             }
-        }, [isAuthenticated, lastUpdate, contenidoTematicoId]) // Añadir lastUpdate como dependencia
+        }, [isAuthenticated, lastUpdate, contenidoTematicoId])
     );
 
     useFocusEffect(
