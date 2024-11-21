@@ -57,6 +57,8 @@ export default function Ejercicio(){
     const [cantidadBotones, setCantidadBotones] = useState(0);
     const buttonActionsRef = useRef({});
     const backActionRef = useRef(null);
+    const [lastGestureTime, setLastGestureTime] = useState(0);
+    const GESTO_COOLDOWN = 1000; // 1 segundo de cooldown entre gestos
 
     //Recuperar indice de botones
     const { gesture} = useGestos();
@@ -163,29 +165,33 @@ export default function Ejercicio(){
     useFocusEffect(
         useCallback(() => {
             if (gesture !== null) {
-                const interval = setInterval(() => {
+                const currentTime = Date.now();
+                
+                // Verificar si ha pasado suficiente tiempo desde el último gesto
+                if (currentTime - lastGestureTime >= GESTO_COOLDOWN) {
                     if (gesture === "rightWink" && cantidadBotones > 0) {
                         console.log("Estás guiñando el ojo derecho!");
                         setIndiceBotonFocus((prevIndex) => (prevIndex + 1) % cantidadBotones);
+                        setLastGestureTime(currentTime);
                     } else if (gesture === "leftWink" && cantidadBotones > 0) {
                         console.log("Estás guiñando el ojo izquierdo!");
                         if (backActionRef.current) {
                             backActionRef.current();
                         }
-                        // setIndiceBotonFocus((prevIndex) => (prevIndex - 1 + cantidadBotones) % cantidadBotones);
+                        setLastGestureTime(currentTime);
                     } else if (gesture === "smile" && cantidadBotones > 0) {
                         console.log("Estás sonriendo!");
                         const action = buttonActionsRef.current[indiceBotonFocus];
                         if (action) {
                             action();
                         }
+                        setLastGestureTime(currentTime);
                     }
-                }, 400);
-    
-                // Limpieza para evitar fugas de memoria
-                return () => clearInterval(interval);
+                } else {
+                    console.log("Gesto ignorado - cooldown activo");
+                }
             }
-        }, [gesture, cantidadBotones, indiceBotonFocus])
+        }, [gesture, cantidadBotones, indiceBotonFocus, lastGestureTime])
     );
 
     //Obtener el estado de ejercicio (Resuelto o no resuelto) cuando se monta el componente
