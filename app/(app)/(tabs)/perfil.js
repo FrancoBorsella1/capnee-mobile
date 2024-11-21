@@ -101,7 +101,7 @@ export default function Perfil() {
     };
 
     const handleOptions = async () => {
-        router.replace('/opciones');
+        router.push('/opciones');
     }
 
     const handleLogout = async () => {
@@ -130,7 +130,7 @@ export default function Perfil() {
                     if (gesture === "rightWink" && cantidadBotones > 0) {
                         console.log("Estás guiñando el ojo derecho!");
                         setIndiceBotonFocus((prevIndex) => (prevIndex + 1) % cantidadBotones);
-                    } else if (gesture === "leftWink" && cantidadBotones > 0) {
+                    } else if (gesture === "leftWink") {
                         console.log("Estás guiñando el ojo izquierdo!");
                         // setIndiceBotonFocus((prevIndex) => (prevIndex - 1 + cantidadBotones) % cantidadBotones);
                     } else if (gesture === "smile" && cantidadBotones > 0) {

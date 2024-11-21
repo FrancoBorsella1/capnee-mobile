@@ -108,8 +108,8 @@ const styles = StyleSheet.create({
         margin: 20
     },
     imageFooter: {
-        height: 30,
-        width: 100
+        height: 23,
+        width: 80
     },
     textoFooter: {
         marginTop: 5,
