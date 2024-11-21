@@ -9,7 +9,7 @@ export default function CameraBackground() {
   const [isActive, setIsActive] = useState(true);
   const { handleGestos, navegacionActivada,setGesture,gesture } = useGestos();
   const lastGestureTime = useRef(Date.now());
-  const GESTURE_COOLDOWN = 600;
+  const GESTURE_COOLDOWN = 400;
 
   // Manejo de permisos de cámara
   useEffect(() => {

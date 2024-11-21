@@ -1,11 +1,13 @@
+/* eslint-disable no-undef */
 import Fondo from "../../../components/Fondo";
 import CartaAlumno from "../../../components/CartaAlumno";
 import colors from "../../../constants/colors";
 import BotonS from "../../../components/BotonS";
 import { Gear, Close } from "../../../components/Icons";
 import { useAuth } from "../../context/AuthContext";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useRouter, useFocusEffect } from "expo-router";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { useGestos } from "../../context/GestosContext";
 // import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 
@@ -17,6 +19,16 @@ export default function Perfil() {
     const { getToken } = useAuth();
     const [decodedToken, setDecodedToken] = useState(null);
     const [curso, setCurso] = useState(null);
+    const { gesture } = useGestos();
+
+    // Estado para manejar el índice del botón en foco
+    const [indiceBotonFocus, setIndiceBotonFocus] = useState(0);
+    const [cantidadBotones, setCantidadBotones] = useState(2);
+    const buttonActionsRef = useRef({});
+    const buttonRefs = useRef([]);
+
+    const [lastGesture, setLastGesture] = useState(null);
+    const lastGestureTimeRef = useRef(0);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -84,6 +96,11 @@ export default function Perfil() {
         }
     };
 
+    // Registro de acciones de botón
+    const registerButtonAction = (index, action) => {
+        buttonActionsRef.current[index] = action;
+    };
+
     const handleOptions = async () => {
         router.replace('/opciones');
     }
@@ -91,6 +108,50 @@ export default function Perfil() {
     const handleLogout = async () => {
         await logout();
     }
+
+    // Efecto para establecer la cantidad de botones
+    useFocusEffect(
+        useCallback(() => {
+            const handleGesture = () => {
+                const currentTime = Date.now();
+                
+                // Prevenir detecciones repetidas del mismo gesto
+                if (gesture === lastGesture) {
+                    // Ignorar si el mismo gesto se repite en menos de 1.5 segundos
+                    if (currentTime - lastGestureTimeRef.current < 1500) {
+                        return;
+                    }
+                }
+
+                if (gesture !== null) {
+                    // Actualizar último gesto y tiempo
+                    setLastGesture(gesture);
+                    lastGestureTimeRef.current = currentTime;
+
+                    if (gesture === "rightWink" && cantidadBotones > 0) {
+                        console.log("Estás guiñando el ojo derecho!");
+                        setIndiceBotonFocus((prevIndex) => (prevIndex + 1) % cantidadBotones);
+                    } else if (gesture === "leftWink" && cantidadBotones > 0) {
+                        console.log("Estás guiñando el ojo izquierdo!");
+                    } else if (gesture === "smile" && cantidadBotones > 0) {
+                        console.log("Estás sonriendo!");
+                        const action = buttonActionsRef.current[indiceBotonFocus];
+                        if (action) {
+                            action();
+                        }
+                    }
+                }
+            };
+
+            // Llamar a handleGesture inmediatamente cuando cambia el gesto
+            handleGesture();
+
+            return () => {
+                // Limpiar estado de último gesto
+                setLastGesture(null);
+            };
+        }, [gesture, cantidadBotones, indiceBotonFocus])
+    );
 
     return (
         <Fondo color={colors.amarillo}>
@@ -102,12 +163,22 @@ export default function Perfil() {
                 titulo="Ajustes"
                 IconoComponente={Gear}
                 onPress={handleOptions}
+                focused={indiceBotonFocus === 0}
+                buttonRef={(ref) => {
+                    buttonRefs.current[0] = ref;
+                    registerButtonAction(0, handleOptions);
+                }}
             />
             <BotonS 
                 titulo="Cerrar sesión"
                 IconoComponente={Close}
                 colorFondo={colors.rojo}
                 onPress={handleLogout}
+                focused={indiceBotonFocus === 1}
+                buttonRef={(ref) => {
+                    buttonRefs.current[1] = ref;
+                    registerButtonAction(1, handleLogout);
+                }}
             />
         </Fondo>
     );

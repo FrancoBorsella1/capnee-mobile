@@ -62,12 +62,12 @@ export default function Login() {
                         titulo="Iniciar sesión"
                         onPress={handleLogin}
                     />
-                    <BotonL
+                    {/* <BotonL
                         titulo="Inicio de sesión facial"
                         tamanoFuente={24}
                         onPress={handlePress}
                         habilitado={false}
-                    />
+                    /> */}
                 </View>       
             </ScrollView>
         </Fondo>

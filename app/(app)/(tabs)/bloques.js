@@ -21,11 +21,12 @@ export default function Bloques() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const router = useRouter();
+
+    // Estados para la navegación con gestos
+    const { gesture} = useGestos();
     const [indiceBotonFocus, setIndiceBotonFocus] = useState(0);
     const [cantidadBotones, setCantidadBotones] = useState(0);
     const buttonActionsRef = useRef({})
-    //Recuperar indice de botones
-    const { gesture} = useGestos();
 
     //Recuperar token y estado de autenticación del AuthContext
     const { getToken, isAuthenticated, getPayloadFromJWT, setCursoId, cursoId } = useAuth();
@@ -34,6 +35,7 @@ export default function Bloques() {
     //Referencia para el autoscroll de la pantalla
     const scrollViewRef = useRef(null);
     const buttonRefs = useRef([]);
+    
 
     const getBloques = async () => {
         try {
@@ -121,8 +123,7 @@ export default function Bloques() {
         delete buttonActionsRef.current[index];
     };
     
-
-    // Función para hacer scroll hasta el botón enfocado
+    // Detección de gestos
     useFocusEffect(
         useCallback(() => {
             if (gesture !== null) {
@@ -132,7 +133,7 @@ export default function Bloques() {
                         setIndiceBotonFocus((prevIndex) => (prevIndex + 1) % cantidadBotones);
                     } else if (gesture === "leftWink" && cantidadBotones > 0) {
                         console.log("Estás guiñando el ojo izquierdo!");
-                        setIndiceBotonFocus((prevIndex) => (prevIndex - 1 + cantidadBotones) % cantidadBotones);
+                        // setIndiceBotonFocus((prevIndex) => (prevIndex - 1 + cantidadBotones) % cantidadBotones);
                     } else if (gesture === "smile" && cantidadBotones > 0) {
                         console.log("Estás sonriendo!");
                         console.log("Indice boton:" + indiceBotonFocus);

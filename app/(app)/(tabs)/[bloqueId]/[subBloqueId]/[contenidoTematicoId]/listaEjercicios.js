@@ -26,7 +26,8 @@ export default function Ejercicios() {
     
     const [indiceBotonFocus, setIndiceBotonFocus] = useState(0);
     const [cantidadBotones, setCantidadBotones] = useState(0);
-    const buttonActionsRef = useRef({})
+    const buttonActionsRef = useRef({});
+    const backActionRef = useRef(null);
 
     //Recuperar indice de botones
     const { gesture} = useGestos();
@@ -39,6 +40,17 @@ export default function Ejercicios() {
     const unregisterButtonAction = (index) => {
         delete buttonActionsRef.current[index];
     };
+
+    // Registrar la función de volver hacia atrás 
+    const registerBackAction = (action) => {
+        backActionRef.current = action;
+    };
+    
+    // Eliminar la función de volver hacia atrás
+    const unregisterBackAction = () => {
+        backActionRef.current = null;
+    };
+
     //Recuperar parámetros de ruta
     const { bloqueId, subBloqueId, contenidoTematicoId } = useLocalSearchParams();
 
@@ -90,6 +102,21 @@ export default function Ejercicios() {
         }, [ejercicios])
     );
 
+    //Lógica para volver hacia atrás con gestos
+    useFocusEffect(
+        useCallback(() => {
+            registerBackAction(handleBack);
+            return () => unregisterBackAction();
+        }, [handleBack, registerBackAction, unregisterBackAction])
+    );
+
+    //Volver a pantalla sub-bloques
+    const handleBack = useCallback(() => {
+        router.replace({
+            pathname: `/${bloqueId}/${subBloqueId}/listaContenidos`,
+        });
+    }, [router]);
+
     // Detección de gestos
     useFocusEffect(
         useCallback(() => {
@@ -101,11 +128,12 @@ export default function Ejercicios() {
                         setIndiceBotonFocus((prevIndex) => (prevIndex + 1) % cantidadBotones);
                     } else if (gesture === "leftWink" && cantidadBotones > 0) {
                         console.log("Estás guiñando el ojo izquierdo!");
-                        setIndiceBotonFocus((prevIndex) => (prevIndex - 1 + cantidadBotones) % cantidadBotones);
+                        if (backActionRef.current) {
+                            backActionRef.current();
+                        }
+                        // setIndiceBotonFocus((prevIndex) => (prevIndex - 1 + cantidadBotones) % cantidadBotones);
                     } else if (gesture === "smile" && cantidadBotones > 0) {
                         console.log("Estás sonriendo!");
-                        console.log("Indice boton:" + indiceBotonFocus);
-                        console.log(buttonActionsRef.current[indiceBotonFocus]);
                         const action = buttonActionsRef.current[indiceBotonFocus];
                         if (action) {
                             action();
@@ -151,14 +179,6 @@ export default function Ejercicios() {
         });
     };
 
-    //Volver a pantalla de contenidos
-    const handleBack = () => {
-        router.replace({
-            pathname: `/${bloqueId}/${subBloqueId}/listaContenidos`,
-        });
-    };
-
-
     return (
         <Fondo color={colors.celeste}>
             <Header
@@ -178,8 +198,8 @@ export default function Ejercicios() {
                             resuelto={ejercicio.isResolved}
                             buttonRef={(ref) => {
                                 buttonRefs.current[index] = ref;
-                                 registerButtonAction(index, () => handleExercisePress(ejercicio.id)); // Registro de acción
-                                 }}
+                                registerButtonAction(index, () => handleExercisePress(ejercicio.id)); // Registro de acción
+                            }}
                         />
                     ))}
                 </ScrollView>
