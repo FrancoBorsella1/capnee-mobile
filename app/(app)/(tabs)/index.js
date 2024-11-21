@@ -75,7 +75,7 @@ export default function Index() {
     };
 
     const handlePress = () => {
-        router.push('/bloques');
+        router.replace('/bloques');
     };
 
     // Efecto para establecer la cantidad de botones
@@ -107,11 +107,14 @@ export default function Index() {
 
                     if (gesture === "rightWink" && cantidadBotones > 0) {
                         console.log("Estás guiñando el ojo derecho!");
-                        // setIndiceBotonFocus((prevIndex) => (prevIndex + 1) % cantidadBotones);
+                        setIndiceBotonFocus((prevIndex) => (prevIndex + 1) % cantidadBotones);
                     } else if (gesture === "leftWink" && cantidadBotones > 0) {
                         console.log("Estás guiñando el ojo izquierdo!");
+                        // setIndiceBotonFocus((prevIndex) => (prevIndex - 1 + cantidadBotones) % cantidadBotones);
                     } else if (gesture === "smile" && cantidadBotones > 0) {
                         console.log("Estás sonriendo!");
+                        console.log("Indice boton:" + indiceBotonFocus);
+                        console.log(buttonActionsRef.current[indiceBotonFocus]);
                         const action = buttonActionsRef.current[indiceBotonFocus];
                         if (action) {
                             action();

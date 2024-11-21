@@ -26,7 +26,9 @@ export default function Bloques() {
     const { gesture} = useGestos();
     const [indiceBotonFocus, setIndiceBotonFocus] = useState(0);
     const [cantidadBotones, setCantidadBotones] = useState(0);
-    const buttonActionsRef = useRef({})
+    const buttonActionsRef = useRef({});
+    const [lastGesture, setLastGesture] = useState(null);
+    const lastGestureTimeRef = useRef(0);
 
     //Recuperar token y estado de autenticación del AuthContext
     const { getToken, isAuthenticated, getPayloadFromJWT, setCursoId, cursoId } = useAuth();
@@ -126,8 +128,22 @@ export default function Bloques() {
     // Detección de gestos
     useFocusEffect(
         useCallback(() => {
-            if (gesture !== null) {
-                const interval = setInterval(() => {
+            const handleGesture = () => {
+                const currentTime = Date.now();
+                
+                // Prevenir detecciones repetidas del mismo gesto
+                if (gesture === lastGesture) {
+                    // Ignorar si el mismo gesto se repite en menos de 1.5 segundos
+                    if (currentTime - lastGestureTimeRef.current < 1500) {
+                        return;
+                    }
+                }
+
+                if (gesture !== null) {
+                    // Actualizar último gesto y tiempo
+                    setLastGesture(gesture);
+                    lastGestureTimeRef.current = currentTime;
+
                     if (gesture === "rightWink" && cantidadBotones > 0) {
                         console.log("Estás guiñando el ojo derecho!");
                         setIndiceBotonFocus((prevIndex) => (prevIndex + 1) % cantidadBotones);
@@ -144,17 +160,22 @@ export default function Bloques() {
                         }
                     } else if (gesture === "turnLeft") {
                         console.log("Estás girando la cabeza hacia la izquierda!");
-                        router.replace('/perfil');
+                        // router.replace('/perfil');
                     } else if (gesture === "turnRight") {
                         console.log("Estás girando la cabeza hacia la derecha!"); 
                         router.replace('/');
                     }
-                }, 400);
-    
-                // Limpieza para evitar fugas de memoria
-                return () => clearInterval(interval);
-            }
-        }, [gesture, cantidadBotones, indiceBotonFocus]) // Asegúrate de incluir las dependencias necesarias
+                }
+            };
+
+            // Llamar a handleGesture inmediatamente cuando cambia el gesto
+            handleGesture();
+
+            return () => {
+                // Limpiar estado de último gesto
+                setLastGesture(null);
+            };
+        }, [gesture, cantidadBotones, indiceBotonFocus])
     );
     
     

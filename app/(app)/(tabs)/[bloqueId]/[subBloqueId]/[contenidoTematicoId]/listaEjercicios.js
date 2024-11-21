@@ -126,7 +126,7 @@ export default function Ejercicios() {
                     if (gesture === "rightWink" && cantidadBotones > 0) {
                         console.log("Estás guiñando el ojo derecho!");
                         setIndiceBotonFocus((prevIndex) => (prevIndex + 1) % cantidadBotones);
-                    } else if (gesture === "leftWink" && cantidadBotones > 0) {
+                    } else if (gesture === "leftWink") {
                         console.log("Estás guiñando el ojo izquierdo!");
                         if (backActionRef.current) {
                             backActionRef.current();

@@ -132,8 +132,11 @@ export default function Perfil() {
                         setIndiceBotonFocus((prevIndex) => (prevIndex + 1) % cantidadBotones);
                     } else if (gesture === "leftWink" && cantidadBotones > 0) {
                         console.log("Estás guiñando el ojo izquierdo!");
+                        // setIndiceBotonFocus((prevIndex) => (prevIndex - 1 + cantidadBotones) % cantidadBotones);
                     } else if (gesture === "smile" && cantidadBotones > 0) {
                         console.log("Estás sonriendo!");
+                        console.log("Indice boton:" + indiceBotonFocus);
+                        console.log(buttonActionsRef.current[indiceBotonFocus]);
                         const action = buttonActionsRef.current[indiceBotonFocus];
                         if (action) {
                             action();
@@ -143,7 +146,7 @@ export default function Perfil() {
                         router.replace('/');
                     } else if (gesture === "turnRight") {
                         console.log("Estás girando la cabeza hacia la derecha!"); 
-                        router.replace('/bloques');
+                        // router.replace('/');
                     }
                 }
             };
