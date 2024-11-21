@@ -116,6 +116,12 @@ export default function Index() {
                         if (action) {
                             action();
                         }
+                    } else if (gesture === "turnLeft") {
+                        console.log("Estás girando la cabeza hacia la izquierda!");
+                        router.replace('/bloques');
+                    } else if (gesture === "turnRight") {
+                        console.log("Estás girando la cabeza hacia la derecha!"); 
+                        router.replace('/perfil');
                     }
                 }
             };

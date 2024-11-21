@@ -1,6 +1,8 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import colors from "../constants/colors";
 
+const logo = require('../assets/student-icon.png');
+
 export default function CartaAlumno({
     nombre = 'Nombre Apellido',
     curso = 'X°X - 20XX'
@@ -8,7 +10,9 @@ export default function CartaAlumno({
 }) {
     return (
         <View style={styles.conteiner}>
-            <Image style={styles.image}/>
+            <View style={styles.imageContainer}>
+                <Image source={logo} style={styles.image}/>
+            </View>
             <View style={styles.carta}>
                 <Text style={styles.nombre}>{nombre}</Text>
                 <Text style={styles.curso}>Curso: {curso}</Text>
@@ -21,13 +25,20 @@ const styles = StyleSheet.create({
     conteiner: {
         alignItems: 'center'
     },
-    image: {
+    imageContainer: {
         height: 130,
         width: 130,
         borderRadius: 100,
         backgroundColor: colors.gris,
         zIndex: 1,
-        marginBottom: -60
+        marginBottom: -60,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    image: {
+        width: 90,
+        height: 90,
+        marginBottom: -40
     },
     carta: {
         minHeight: 200,

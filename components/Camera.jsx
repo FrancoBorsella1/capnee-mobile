@@ -50,12 +50,15 @@ export default function CameraBackground() {
     const {
       leftEyeOpenProbability,
       rightEyeOpenProbability,
-      smilingProbability
+      smilingProbability,
+      rollAngle
     } = face;
 
     const isRightEyeClosed = leftEyeOpenProbability < 0.1;
     const isLeftEyeClosed = rightEyeOpenProbability < 0.1;
     const isSmiling = smilingProbability > 0.8;
+    const isTurningLeft = rollAngle > 320 && rollAngle < 330;
+    const isTurningRight = rollAngle > 15 && rollAngle < 50;
 
     // Detección de gestos más precisa
     if (isRightEyeClosed && !isLeftEyeClosed) {
@@ -64,6 +67,10 @@ export default function CameraBackground() {
       return "leftWink";
     } else if (isSmiling) {
       return "smile";
+    } else if (isTurningLeft) {
+      return "turnLeft";
+    } else if (isTurningRight) {
+      return "turnRight";
     }
     return null;
   };

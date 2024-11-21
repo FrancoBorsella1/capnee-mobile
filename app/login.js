@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useAuth } from "./context/AuthContext";
 
 const logo = require('../assets/logo_capnee.png')
+const gidas = require('../assets/logo-gidas.png')
 
 export default function Login() {
     const [username, setUsername] = useState('');
@@ -58,7 +59,7 @@ export default function Login() {
                         secureTextEntry={true}
                     />
                     {mensajeError ? <Text style={styles.errorText}>{mensajeError}</Text> : null}
-                    <BotonS
+                    <BotonL
                         titulo="Iniciar sesión"
                         onPress={handleLogin}
                     />
@@ -68,6 +69,10 @@ export default function Login() {
                         onPress={handlePress}
                         habilitado={false}
                     /> */}
+                    <View style={styles.footer}>
+                        <Image source={gidas} style={styles.imageFooter}/>
+                        <Text style={styles.textoFooter}> - UTN FRLP - 2024</Text>
+                    </View>
                 </View>       
             </ScrollView>
         </Fondo>
@@ -82,18 +87,35 @@ const styles = StyleSheet.create({
         marginTop: 'auto',
         borderTopRightRadius: 50,
         borderTopLeftRadius: 50,
-        padding: 10
+        padding: 10,
     },
     form: {
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 5
+        gap: 5,
+        margin: 30
     },
     image: {
         height: '20%',
         width: '80%',
         marginBottom: 'auto',
-        marginTop: '12%'
+        marginTop: '12%',
+    },
+    footer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        margin: 20
+    },
+    imageFooter: {
+        height: 30,
+        width: 100
+    },
+    textoFooter: {
+        marginTop: 5,
+        fontSize: 18,
+        fontWeight: '400',
+        color: colors.gris
     },
     texto: {
         fontSize: 32,

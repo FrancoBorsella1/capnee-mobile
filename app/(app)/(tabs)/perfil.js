@@ -21,12 +21,11 @@ export default function Perfil() {
     const [curso, setCurso] = useState(null);
     const { gesture } = useGestos();
 
-    // Estado para manejar el índice del botón en foco
+    // Estado para manejar la navegación con gestos
     const [indiceBotonFocus, setIndiceBotonFocus] = useState(0);
     const [cantidadBotones, setCantidadBotones] = useState(2);
     const buttonActionsRef = useRef({});
     const buttonRefs = useRef([]);
-
     const [lastGesture, setLastGesture] = useState(null);
     const lastGestureTimeRef = useRef(0);
 
@@ -109,7 +108,7 @@ export default function Perfil() {
         await logout();
     }
 
-    // Efecto para establecer la cantidad de botones
+    // Detección de gestos
     useFocusEffect(
         useCallback(() => {
             const handleGesture = () => {
@@ -139,6 +138,12 @@ export default function Perfil() {
                         if (action) {
                             action();
                         }
+                    } else if (gesture === "turnLeft") {
+                        console.log("Estás girando la cabeza hacia la izquierda!");
+                        router.replace('/');
+                    } else if (gesture === "turnRight") {
+                        console.log("Estás girando la cabeza hacia la derecha!"); 
+                        router.replace('/bloques');
                     }
                 }
             };

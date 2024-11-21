@@ -142,6 +142,12 @@ export default function Bloques() {
                         if (action) {
                             action();
                         }
+                    } else if (gesture === "turnLeft") {
+                        console.log("Estás girando la cabeza hacia la izquierda!");
+                        router.replace('/perfil');
+                    } else if (gesture === "turnRight") {
+                        console.log("Estás girando la cabeza hacia la derecha!"); 
+                        router.replace('/');
                     }
                 }, 400);
     

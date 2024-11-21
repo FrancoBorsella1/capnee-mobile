@@ -3,11 +3,14 @@ import BotonS from "../../../components/BotonS";
 import Fondo from "../../../components/Fondo";
 import Header from "../../../components/Header";
 import colors from "../../../constants/colors";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, Image } from "react-native";
 import { Camera, Eye, Smiley } from "../../../components/Icons";
 import { useState, useRef, useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
 import { GestosContext, useGestos } from "../../context/GestosContext";
+
+const tutorial = require('../../../assets/tutorial-gestos.png');
+const logo = require('../../../assets/calculator.png');
 
 export default function Opciones() {
     //Estados para manejar el cambio de color y texto del botón cuando se activa y desactiva
@@ -150,6 +153,10 @@ export default function Opciones() {
                     tamanoFuente={22}
                 /> */}
             </View>
+            <View style={styles.tutorialContainer}>
+                <Text style={styles.text}>Tutorial</Text>
+                <Image source={tutorial} style={styles.imagen}/>
+            </View>
         </Fondo>
     );
 }
@@ -162,7 +169,21 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         padding: 10,
-        margin: 20,
+        marginTop: 30,
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 3},
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        //Sombras para android
+        elevation: 5,
+    },
+    tutorialContainer: {
+        width: '85%',
+        backgroundColor: colors.blanco,
+        borderRadius: 10,
+        alignItems: 'center',
+        paddingTop: 10,
+        marginTop: 30,
         shadowColor: '#000',
         shadowOffset: {width: 0, height: 3},
         shadowOpacity: 0.25,
@@ -177,5 +198,11 @@ const styles = StyleSheet.create({
         marginTop: 10,
         marginBottom: 10,
         textAlign: 'center'
+    },
+    imagen: {
+        width: '100%',
+        height: 250,
+        resizeMode: 'cover',
+        borderRadius: 10,
     }
 })
