@@ -264,6 +264,11 @@ export default function Ejercicio(){
                 console.error('Error al enviar los datos: ', error);
                 // Opcional: Mostrar un toast o notificación de error al usuario
             }
+
+            setTimeout(() => {
+                handleBack();
+            }, 3000);
+            
         } else {
             if (!resuelto) {
                 temblar();
