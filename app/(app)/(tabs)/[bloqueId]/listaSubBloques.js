@@ -9,7 +9,7 @@ import { useAuth } from "../../../context/AuthContext";
 import Header from "../../../../components/Header";
 import Constants from 'expo-constants';
 
-const API_URL = 'http://149.50.140.55:8082';
+const API_URL = 'http://200.58.106.151:8082';
 
 export default function SubBloques() {
     const [nombreBloque, setNombreBloque] = useState("");

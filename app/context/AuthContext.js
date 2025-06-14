@@ -13,7 +13,7 @@ export const AuthContextProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
     const [cursoId, setCursoId] = useState(null);
     const [estudianteId, setEstudianteId] = useState(null);
-    const API_URL = 'http://149.50.140.55:8081';
+    const API_URL = 'http://200.58.106.151:8081';
     const router = useRouter();
 
     useEffect(() => {

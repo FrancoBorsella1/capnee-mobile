@@ -9,8 +9,8 @@ import { useRouter } from "expo-router";
 import { jwtDecode } from "jwt-decode";
 
 const mathLogo = require('../../../assets/math_symbols.png');
-const API_URL_USER = 'http://149.50.140.55:8081';
-const API_URL_ACADEMY = 'http://149.50.140.55:8082';
+const API_URL_USER = 'http://200.58.106.151:8081';
+const API_URL_ACADEMY = 'http://200.58.106.151:8082';
 
 export default function Bloques() {
     //Estados para manejar la carga de bloques
