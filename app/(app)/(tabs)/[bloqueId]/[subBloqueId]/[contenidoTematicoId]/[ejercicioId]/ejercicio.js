@@ -17,7 +17,7 @@ import axios from "axios";
 const imagenModal = require('../../../../../../../assets/calculator2.png');
 const medalla = require('../../../../../../../assets/medal.png');
 
-const API_URL = 'http://149.50.140.55:8082';
+const API_URL = 'http://200.58.106.151:8082';
 
 export default function Ejercicio(){
     const [ejercicio, setEjercicio] = useState({});

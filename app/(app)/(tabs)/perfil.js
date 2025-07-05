@@ -11,7 +11,7 @@ import { useGestos } from "../../context/GestosContext";
 // import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 
-const API_URL = 'http://149.50.140.55:8081';
+const API_URL = 'http://200.58.106.151:8081';
 
 export default function Perfil() {
     const { logout, getPayloadFromJWT } = useAuth();
